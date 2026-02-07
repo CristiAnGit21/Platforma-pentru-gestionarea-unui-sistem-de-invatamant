@@ -1,63 +1,20 @@
 import * as React from 'react';
-import { styled, alpha } from '@mui/material/styles';
+
 import {
     AppBar,
     Box,
     Toolbar,
     IconButton,
     Typography,
-    InputBase,
+  
     Badge,
     MenuItem,
     Menu,
-    Button
+
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import MailIcon from '@mui/icons-material/Mail';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 
-// --- STILURI PENTRU BARA DE CĂUTARE (MUI) ---
-const Search = styled('div')(({ theme }) => ({
-    position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    '&:hover': {
-        backgroundColor: alpha(theme.palette.common.white, 0.25),
-    },
-    marginRight: theme.spacing(2),
-    marginLeft: 5,
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-        marginLeft: theme.spacing(3),
-        width: 'auto',
-    },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
-    '& .MuiInputBase-input': {
-        padding: theme.spacing(1, 1, 1, 0),
-        paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-        transition: theme.transitions.create('width'),
-        width: '100%',
-        [theme.breakpoints.up('md')]: {
-            width: '20ch',
-        },
-    },
-}));
 
 export default function App() {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -113,7 +70,7 @@ export default function App() {
             <MenuItem>
                 <IconButton size="large" color="inherit">
                     <Badge badgeContent={4} color="error">
-                        <MailIcon />
+                      
                     </Badge>
                 </IconButton>
                 <p>Messages</p>
@@ -121,14 +78,14 @@ export default function App() {
             <MenuItem>
                 <IconButton size="large" color="inherit">
                     <Badge badgeContent={17} color="error">
-                        <NotificationsIcon />
+                  
                     </Badge>
                 </IconButton>
                 <p>Notifications</p>
             </MenuItem>
             <MenuItem onClick={handleProfileMenuOpen}>
                 <IconButton size="large" color="inherit">
-                    <AccountCircle />
+               
                 </IconButton>
                 <p>Profile</p>
             </MenuItem>
@@ -146,26 +103,22 @@ export default function App() {
                     <Typography variant="h6" noWrap component="div" sx={{ display: { xs: 'none', sm: 'block' } }}>
                         Bun Venit!
                     </Typography>
-                    <Search>
-                        <SearchIconWrapper>
-                            <SearchIcon />
-                        </SearchIconWrapper>
-                        <StyledInputBase placeholder="Search…" inputProps={{ 'aria-label': 'search' }} />
-                    </Search>
+                 
+                            
                     <Box sx={{ flexGrow: 1 }} />
                     <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
                         <IconButton size="large" color="inherit">
                             <Badge badgeContent={4} color="error">
-                                <MailIcon />
+                             
                             </Badge>
                         </IconButton>
                         <IconButton size="large" color="inherit">
                             <Badge badgeContent={17} color="error">
-                                <NotificationsIcon />
+                         
                             </Badge>
                         </IconButton>
                         <IconButton size="large" edge="end" onClick={handleProfileMenuOpen} color="inherit">
-                            <AccountCircle />
+                         
                         </IconButton>
                     </Box>
                     <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
@@ -179,7 +132,7 @@ export default function App() {
             {renderMenu}
 
             {/* --- SECȚIUNEA FORMULAR (CENTRAT SUS-MIJLOC) --- */}
-            <div className="flex justify-center items-start pt-12 px-4">
+            <div className="flex justify-center items-center px-4 min-h-[calc(100vh-64px)]">
                 <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
 
                     <div className="flex justify-between items-baseline mb-8">
