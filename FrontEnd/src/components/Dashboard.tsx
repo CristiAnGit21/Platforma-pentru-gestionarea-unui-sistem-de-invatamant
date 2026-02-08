@@ -2,7 +2,7 @@
 const Dashboard = () => {
     return <div className="app">
         <NavBar />
-        <h1>Dashboard</h1>
+        <h1></h1>
     </div>
     
 };

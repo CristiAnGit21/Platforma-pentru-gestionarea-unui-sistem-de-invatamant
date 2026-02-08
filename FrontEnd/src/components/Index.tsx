@@ -13,16 +13,16 @@ const NavBar = () => {
                     {/* Right side */} 
                     <div className={`${flexBetween} w-full`}>
                         <div className={`${flexBetween} gap-8 text-sm`}>
-                            <p>Acasă</p>
-                            <p>Catalog</p>
-                            <p>Orar</p>
-                            <p>Contacte</p>
-                            <p>Situația financiară</p>
-                            <p>Notificări</p>
+                            <button>Acasă</button>
+                            <button>Catalog</button>
+                            <button>Orar</button>
+                            <button>Contacte</button>
+                            <button>Situația financiară</button>
+                            <button>Notificări</button>
                         </div>
                         <div>
                             <button>
-                                    Log Out
+                                    Ieșire
                             </button>
                         </div>
                     </div>
