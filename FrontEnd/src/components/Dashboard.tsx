@@ -1,6 +1,7 @@
-﻿const Dashboard = () => {
+﻿import NavBar from "./Scenes/NavBar";
+const Dashboard = () => {
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+        <div className="flex flex-col items-center justify-up h-screen bg-gray-100">
 
             <h1 className="text-4xl font-bold text-center mb-6">
                 Welcome again!
