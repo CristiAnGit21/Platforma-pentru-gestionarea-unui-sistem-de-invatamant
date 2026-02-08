@@ -1,4 +1,4 @@
-﻿import {Anchor} from "@mui/icons-material";
+﻿import AnchorLink from "react-anchor-link-smooth-scroll";
 type Props = {
     page: string;
     selectedPage: string;
@@ -12,7 +12,7 @@ const Link   = ({
     const lowerCasePage = page.toLowerCase().replace(/ /g, "");
         
     return (
-        <Anchor
+        <AnchorLink
             className={`${selectedPage === lowerCasePage ? "text-primary-500" : ""} 
             transition duration-500 hover:text-primary-300
             `}
@@ -20,7 +20,7 @@ const Link   = ({
         onClick={() => setSelectedPage(lowerCasePage)}
         >
             {page}
-        </Anchor>
+        </AnchorLink>
     )
 }
 export default Link;
