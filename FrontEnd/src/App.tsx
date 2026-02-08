@@ -9,6 +9,7 @@ function App() {
             {isAuth ? <Dashboard /> : <LogIn />}
         </>
     );
+   
 }
 
 export default App;
