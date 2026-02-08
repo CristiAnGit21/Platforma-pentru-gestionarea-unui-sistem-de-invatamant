@@ -1,21 +1,10 @@
-﻿import NavBar from "./Scenes/NavBar";
+﻿import NavBar from "./Index.tsx";
 const Dashboard = () => {
-    return (
-        <div className="flex flex-col items-center justify-up h-screen bg-gray-100">
-
-            <h1 className="text-4xl font-bold text-center mb-6">
-                Welcome again!
-            </h1>
-            <button
-                onClick={() => {
-                    localStorage.removeItem("auth");
-                    window.location.reload();
-                }}
-            >
-                Logout
-            </button>
-        </div>
-    );
+    return <div className="app">
+        <NavBar />
+        <h1>Dashboard</h1>
+    </div>
+    
 };
 
 export default Dashboard;
