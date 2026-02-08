@@ -50,8 +50,13 @@ const NavBar = ({selectedPage, setSelectedPage}: Props) => {
                             />
                         </div>
                         <div>
-                            <button>
-                                    Ieșire
+                            <button
+                                onClick={() => {
+                                    localStorage.removeItem("auth");
+                                    window.location.reload();
+                                }}
+                            >
+                                Ieșire
                             </button>
                         </div>
                     </div>

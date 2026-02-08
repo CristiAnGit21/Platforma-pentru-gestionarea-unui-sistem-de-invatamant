@@ -1,5 +1,4 @@
 import LogIn from "./components/LogIn";
-
 import Dashboard from "./components/Dashboard";
 
 function App() {

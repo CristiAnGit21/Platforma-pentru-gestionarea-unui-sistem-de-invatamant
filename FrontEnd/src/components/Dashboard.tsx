@@ -8,7 +8,7 @@ const Dashboard = () => {
             selectedPage={selectedPage}
             setSelectedPage={setSelectedPage}
         />
-        <h1></h1>
+      
     </div>
     
 };
