@@ -1,8 +1,10 @@
 {
   "dependencies": {
-    "@heroicons/react": "^2.2.0"
+    "@heroicons/react": "^2.2.0",
+    "react-anchor-link-smooth-scroll": "^1.0.12"
   },
   "devDependencies": {
-    "@types/node": "^25.2.2"
+    "@types/node": "^25.2.2",
+    "@types/react-anchor-link-smooth-scroll": "^1.0.5"
   }
 }

@@ -1,5 +1,4 @@
 import LogIn from "./components/LogIn";
-
 import Dashboard from "./components/Dashboard";
 
 function App() {
@@ -9,6 +8,7 @@ function App() {
             {isAuth ? <Dashboard /> : <LogIn />}
         </>
     );
+   
 }
 
 export default App;

@@ -1,8 +1,14 @@
 ﻿import NavBar from "./Index.tsx";
+import {useState} from "react";
+
 const Dashboard = () => {
-    return <div className="app">
-        <NavBar />
-        <h1></h1>
+    const [selectedPage, setSelectedPage] = useState<string>("acasa");
+    return <div className="app bg-gray-20">
+        <NavBar
+            selectedPage={selectedPage}
+            setSelectedPage={setSelectedPage}
+        />
+      
     </div>
     
 };
