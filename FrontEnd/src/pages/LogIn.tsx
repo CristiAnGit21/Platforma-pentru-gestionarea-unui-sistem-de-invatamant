@@ -39,8 +39,8 @@ const LogIn = () => {
             <div className="min-h-screen flex items-center justify-center bg-purple-100 p-4">
                 <div className="bg-white rounded-3xl shadow-2xl flex flex-col md:flex-row max-w-4xl w-full min-h-[600px] overflow-hidden">
                     
-                    <div className="p-8 md:p-12 w-full md:w-2/5 flex flex-col justify-center bg-white">
-                        <div className="w-full">
+                    <div className="p-8 md:p-12 w-full md:w-2/5 flex flex-col bg-white">
+                        <div className="mb-8">
                         </div>
                     </div>
                     
@@ -51,7 +51,6 @@ const LogIn = () => {
         </div>
         
     );
-    
 };
 
 
