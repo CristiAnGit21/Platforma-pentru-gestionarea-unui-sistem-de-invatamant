@@ -1,4 +1,4 @@
-﻿import NavBar from "./Index.tsx";
+﻿import NavBar from "../components/Index.tsx";
 import {useState} from "react";
 
 const Dashboard = () => {
