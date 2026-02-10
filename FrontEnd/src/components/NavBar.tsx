@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Logo from '@/assets/logo.png';
 import { Home, BookOpen, Calendar, Phone, DollarSign, Bell, LogOut, Menu } from 'lucide-react';
 
@@ -24,8 +25,7 @@ const NavBar = ({selectedPage, setSelectedPage}: Props) => {
                     isExpanded ? 'w-64' : 'w-24'
                 }`}
             >
-                <div className="flex flex-col h-full p-4"> {/* Am redus padding-ul pentru a lăsa loc centrării */}
-
+                <div className="flex flex-col h-full p-4">
                     <div className={`transition-all duration-300 overflow-hidden mb-6 ${
                         isExpanded ? 'opacity-100 h-auto' : 'opacity-0 h-0'
                     }`}>
@@ -34,7 +34,6 @@ const NavBar = ({selectedPage, setSelectedPage}: Props) => {
                         </div>
                     </div>
 
-                    {/* Buton Menu - Centrat */}
                     <div className="w-full flex justify-center mb-4">
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
@@ -44,13 +43,13 @@ const NavBar = ({selectedPage, setSelectedPage}: Props) => {
                         </button>
                     </div>
 
-                    <div className="flex flex-col gap-4 flex-1 items-center"> {/* items-center ajută la alinierea link-urilor */}
-                        <LinkWithIcon icon={<Home size={27} />} page="Acasă" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<BookOpen size={27} />} page="Catalog" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<Calendar size={27} />} page="Orar" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<DollarSign size={27} />} page="Situația financiară" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<Bell size={27} />} page="Notificări" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<Phone size={27} />} page="Contacte" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                    <div className="flex flex-col gap-4 flex-1 items-center">
+                        <LinkWithIcon icon={<Home size={27} />} page="Acasă" path="/" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<BookOpen size={27} />} page="Catalog" path="/students" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<Calendar size={27} />} page="Orar" path="/orar" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<DollarSign size={27} />} page="Situația financiară" path="#" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<Bell size={27} />} page="Notificări" path="#" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<Phone size={27} />} page="Contacte" path="#" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                     </div>
 
                     <div className="mt-auto pt-4 border-t w-full flex justify-center">
@@ -73,26 +72,27 @@ const NavBar = ({selectedPage, setSelectedPage}: Props) => {
     );
 }
 
-const LinkWithIcon = ({icon, page, setSelectedPage, isExpanded, selectedPage}: any) => {
+const LinkWithIcon = ({icon, page, setSelectedPage, isExpanded, selectedPage, path}: any) => {
     const isSelected = selectedPage === page;
 
     return (
-        <div
-            className={`flex items-center transition-all duration-300 cursor-pointer rounded-xl h-12 ${
-                isExpanded ? 'w-full px-4 gap-3 justify-start' : 'w-12 justify-center'
-            } ${isSelected ? 'bg-violet-100 text-violet-700' : 'hover:bg-gray-100 text-gray-600'}`}
-            onClick={() => setSelectedPage(page)}
-        >
-            <div className="flex items-center justify-center shrink-0">
-                {icon}
+        <Link to={path} className="w-full flex justify-center no-underline text-inherit">
+            <div
+                className={`flex items-center transition-all duration-300 cursor-pointer rounded-xl h-12 ${
+                    isExpanded ? 'w-full px-4 gap-3 justify-start' : 'w-12 justify-center'
+                } ${isSelected ? 'bg-violet-100 text-violet-700' : 'hover:bg-gray-100 text-gray-600'}`}
+                onClick={() => setSelectedPage(page)}
+            >
+                <div className="flex items-center justify-center shrink-0">
+                    {icon}
+                </div>
+                {isExpanded && (
+                    <span className="whitespace-nowrap font-medium opacity-100 transition-opacity">
+                        {page}
+                    </span>
+                )}
             </div>
-
-            {isExpanded && (
-                <span className="whitespace-nowrap font-medium opacity-100 transition-opacity">
-                    {page}
-                </span>
-            )}
-        </div>
+        </Link>
     );
 }
 
