@@ -48,7 +48,7 @@ const NavBar = ({selectedPage, setSelectedPage}: Props) => {
                         <LinkWithIcon icon={<BookOpen size={27} />} page="Catalog" path="/students" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<Calendar size={27} />} page="Orar" path="/orar" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<DollarSign size={27} />} page="Situația financiară" path="#" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<Bell size={27} />} page="Notificări" path="#" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<Bell size={27} />} page="Notificări" path="notificari" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<Phone size={27} />} page="Contacte" path="#" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                     </div>
 
