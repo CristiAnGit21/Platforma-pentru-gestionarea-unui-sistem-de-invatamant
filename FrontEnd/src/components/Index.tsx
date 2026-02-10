@@ -13,6 +13,7 @@ const NavBar = ({selectedPage, setSelectedPage}: Props) => {
 
     return (
         <nav>
+            <div className="min-h-screen flex items-center justify-center bg-purple-100 p-4 font-sans"></div>
             <div
                 className={`fixed left-0 top-0 h-full bg-white shadow-2xl z-50 transition-all duration-300 ease-in-out ${
                     isHovered ? 'w-64' : 'w-20'  // SCHIMBĂ: width dinamic
