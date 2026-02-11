@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import LogIn from "./pages/LogIn";
-import { BrowserRouter } from "react-router-dom";
+import SignUp from "./pages/SignUp"; 
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import NavBar from "./components/NavBar";
 
@@ -13,12 +14,16 @@ function App() {
             {isAuth ? (
                 <div className="flex">
                     <NavBar selectedPage={selectedPage} setSelectedPage={setSelectedPage} />
-                    <main className="flex-1 ml-24 min-h-screen bg-gray-50">
+                    <main className="flex-1 ml-24 min-h-screen bg-gray-50 overflow-x-hidden">
                         <AppRoutes />
                     </main>
                 </div>
             ) : (
-                <LogIn />
+                <Routes>
+                    <Route path="/login" element={<LogIn />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="*" element={<Navigate to="/login" />} />
+                </Routes>
             )}
         </BrowserRouter>
     );
