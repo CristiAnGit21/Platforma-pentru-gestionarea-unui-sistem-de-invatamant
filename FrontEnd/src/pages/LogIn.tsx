@@ -1,10 +1,12 @@
 ﻿import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import loginImg from "../assets/designarena_image_imvn6gn3.png";
 
 const LogIn = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const navigate = useNavigate();
 
     const handleLogin = () => {
         if (email === "admin@test.com" && password === "1234") {
@@ -25,7 +27,12 @@ const LogIn = () => {
                             <h2 className="text-4xl font-extrabold text-gray-800 mb-2">Login</h2>
                             <p className="text-gray-500 text-sm">
                                 Don't have an account?
-                                <span className="text-purple-600 font-semibold cursor-pointer ml-1 hover:underline">Sign Up</span>
+                                <span
+                                    onClick={() => navigate("/signup")}
+                                    className="text-purple-600 font-semibold cursor-pointer ml-1 hover:underline"
+                                >
+                                    Sign Up
+                                </span>
                             </p>
                         </div>
 
@@ -44,7 +51,9 @@ const LogIn = () => {
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="text-gray-700 font-semibold text-sm">Password</label>
-                                    <span className="text-purple-600 text-xs font-semibold cursor-pointer hover:underline">Forgot Password?</span>
+                                    <span className="text-purple-600 text-xs font-semibold cursor-pointer hover:underline">
+                                        Forgot Password?
+                                    </span>
                                 </div>
                                 <input
                                     type="password"
