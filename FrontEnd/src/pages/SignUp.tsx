@@ -11,6 +11,8 @@ const SignUp = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     const handleSignUp = () => {
         setError("");
@@ -30,7 +32,15 @@ const SignUp = () => {
             return;
         }
 
-        navigate("/login");
+        setIsLoading(true);
+
+        setTimeout(() => {
+            setIsLoading(false);
+            setIsSuccess(true);
+            setTimeout(() => {
+                navigate("/login");
+            }, 2000);
+        }, 1500);
     };
 
     return (
@@ -38,7 +48,7 @@ const SignUp = () => {
             <div className="bg-white rounded-3xl shadow-2xl flex flex-col md:flex-row max-w-4xl w-full min-h-[600px] overflow-hidden">
 
                 <div className="w-full md:w-2/5 flex items-center justify-center p-6 bg-[#f9f9ff]">
-                    <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-8 w-full max-w-sm border border-gray-100">
+                    <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-8 w-full max-sm border border-gray-100">
 
                         <div className="mb-6 text-left">
                             <h2 className="text-4xl font-extrabold text-gray-800 mb-2">Sign Up</h2>
@@ -115,9 +125,25 @@ const SignUp = () => {
 
                             <button
                                 onClick={handleSignUp}
-                                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] mt-2"
+                                disabled={isLoading || isSuccess}
+                                className={`w-full font-bold py-3 rounded-xl shadow-lg transition-all transform mt-2 flex items-center justify-center
+                                    ${isSuccess ? "bg-green-500 text-white" : "bg-purple-600 hover:bg-purple-700 text-white"}
+                                    ${isLoading ? "opacity-70 cursor-not-allowed" : "hover:scale-[1.02] active:scale-[0.98]"}
+                                `}
                             >
-                                Sign Up
+                                {isLoading ? (
+                                    <span className="flex items-center gap-2">
+                                        <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Creating account...
+                                    </span>
+                                ) : isSuccess ? (
+                                    "Account Created! ✓"
+                                ) : (
+                                    "Sign Up"
+                                )}
                             </button>
                         </div>
                     </div>
