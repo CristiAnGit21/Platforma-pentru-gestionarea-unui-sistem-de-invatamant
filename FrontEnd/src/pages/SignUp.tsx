@@ -1,13 +1,14 @@
-﻿import { useState } from "react"; // 1. Adăugăm useState în import
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import loginImg from "../assets/designarena_image_imvn6gn3.png";
 
 const SignUp = () => {
     const navigate = useNavigate();
 
-    // 2. Definim stările pentru primele câmpuri
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
+    const [password, setPassword] = useState(""); // Nou
+    const [confirmPassword, setConfirmPassword] = useState(""); // Nou
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-purple-100 p-4 font-sans">
@@ -29,7 +30,6 @@ const SignUp = () => {
                             </p>
                         </div>
 
-                        {/* 3. Adăugăm câmpurile de input */}
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-gray-700 font-semibold text-sm mb-1">Full Name</label>
@@ -52,10 +52,40 @@ const SignUp = () => {
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all placeholder:text-gray-300 text-sm"
                                 />
                             </div>
+
+                            {/* Câmpurile noi de parolă */}
+                            <div>
+                                <label className="block text-gray-700 font-semibold text-sm mb-1">Password</label>
+                                <input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all placeholder:text-gray-300 text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 font-semibold text-sm mb-1">Repeat Password</label>
+                                <input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all placeholder:text-gray-300 text-sm"
+                                />
+                            </div>
+
+                            <button
+                                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] mt-4"
+                            >
+                                Sign Up
+                            </button>
                         </div>
 
                     </div>
                 </div>
+
                 <div className="hidden md:flex md:w-3/5 bg-[#fefefc] relative items-center justify-center overflow-hidden">
                     <img src={loginImg} alt="SignUp" className="w-full h-auto max-w-[90%] object-contain z-10" />
                 </div>
