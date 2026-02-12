@@ -1,5 +1,5 @@
 ﻿import StatCard from "../components/StatCard.tsx";
-import Schedule from "../components/Schedule.tsx";
+import ScheduleCard from "../components/ScheduleCard.tsx";
 import Notifications from "../components/Notifications.tsx";
 import PerformanceChart from "../components/PerformanceChart.tsx";
 import UpcomingEvents from "../components/UpcomingEvents.tsx";
@@ -40,7 +40,7 @@ const Dashboard = () => {
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
                     <div className="xl:col-span-2 flex flex-col gap-6 md:gap-8">
-                        <Schedule />
+                        <ScheduleCard/>
                         <ActiveProjects />
                         <PerformanceChart />
                     </div>

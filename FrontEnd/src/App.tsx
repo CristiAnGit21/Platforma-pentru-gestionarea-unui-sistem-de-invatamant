@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import NavBar from "./components/NavBar";
 
+
 function App() {
     const [selectedPage, setSelectedPage] = useState("Acasă");
     const isAuth = localStorage.getItem("auth") === "true";
