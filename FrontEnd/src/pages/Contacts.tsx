@@ -4,6 +4,6 @@ function Students(){
     return (
         <PageNotFound />
     )
-    
+
 }
 export default Students
