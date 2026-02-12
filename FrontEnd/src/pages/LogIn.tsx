@@ -77,6 +77,7 @@ const LogIn = () => {
                 </div>
 
                 <div className="hidden md:flex md:w-3/5 bg-[#fefefc] relative items-center justify-center overflow-hidden">
+
                     <img
                         src={loginImg}
                         alt="Login illustration"
