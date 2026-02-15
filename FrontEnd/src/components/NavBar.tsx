@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '@/assets/logo.png';
-import { Home, BookOpen, Calendar, Phone, DollarSign, Bell, LogOut, Menu } from 'lucide-react';
+import { IdCard, User, Home, BookOpen, Calendar, Phone, Receipt, Bell, LogOut, Menu, MessageCircleWarning } from 'lucide-react';
 
 type Props = {
     selectedPage: string;
@@ -47,9 +47,13 @@ const NavBar = ({selectedPage, setSelectedPage}: Props) => {
                         <LinkWithIcon icon={<Home size={27} />} page="Acasă" path="/" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<BookOpen size={27} />} page="Catalog" path="/students" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<Calendar size={27} />} page="Orar" path="/orar" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<DollarSign size={27} />} page="Situația financiară" path="/Situatia financiara" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<Receipt  size={27} />} page="Situația financiară" path="/Situatia financiara" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<Bell size={27} />} page="Notificări" path="notificari" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<IdCard size={27}/>} page="Studenți" path="studenți" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<User size={27}/>} page="Profesori" path="profesori" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+                        <LinkWithIcon icon={<MessageCircleWarning size={27}/>} page="Raportează o problemă" path="Raportează o problemă" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<Phone size={27} />} page="Contacte" path="contacte" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
+
                     </div>
 
                     <div className="mt-auto pt-4 border-t w-full flex justify-center">
