@@ -1,4 +1,4 @@
-﻿import errorImage from '../assets/1_DeBkx8vjbumpCO-ZkPE9Cw.png';
+﻿import errorImage from '../assets/403.png';
 
 const PageNotFound = () => {
     return (
@@ -15,7 +15,6 @@ const PageNotFound = () => {
     );
 };
 
-// Am adăugat câteva stiluri de bază pentru a te asigura că imaginea arată bine
 const styles = {
     wrapper: {
         display: 'flex',
