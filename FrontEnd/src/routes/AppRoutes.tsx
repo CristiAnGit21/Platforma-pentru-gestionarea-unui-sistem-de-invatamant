@@ -21,10 +21,10 @@ const dashboardByRole: Record<RoleKey, string> = {
     ELEV: "/elev/dashboard",
 };
 
-const allowedPrefixesByRole: Record<RoleKey, string[]> = {
-    ADMIN: ["/admin/dashboard", "/admin/orar", "/admin/studenti", "/admin/profesori"],
-    PROFESOR: ["/profesor/dashboard", "/profesor/catalog", "/profesor/notificari", "/profesor/studenti", "/profesor/raporteaza"],
-    ELEV: ["/elev/dashboard", "/elev/catalog", "/elev/orar", "/elev/situatia-financiara", "/elev/notificari", "/elev/raporteaza"],
+const prefixByRole: Record<RoleKey, string> = {
+    ADMIN: "/admin",
+    PROFESOR: "/profesor",
+    ELEV: "/elev",
 };
 
 const RoleCatchAll = () => {
@@ -36,12 +36,10 @@ const RoleCatchAll = () => {
     }
 
     const role = session.user.role as RoleKey;
-    const allowedPrefixes = allowedPrefixesByRole[role] ?? [];
+    const allowedPrefix = prefixByRole[role] ?? "/elev";
 
-    const isAllowed = allowedPrefixes.some((prefix) => location.pathname.startsWith(prefix));
-
-    if (!isAllowed) {
-        const redirectTo = dashboardByRole[role] ?? "/dashboard/elev";
+    if (!location.pathname.startsWith(allowedPrefix)) {
+        const redirectTo = dashboardByRole[role] ?? "/elev/dashboard";
         return <Navigate to={redirectTo} replace />;
     }
 
@@ -140,8 +138,6 @@ function AppRoutes() {
                     </RoleGuard>
                 }
             />
-            <Route path="/login" element={<Navigate to="/" replace />} />
-            <Route path="/signup" element={<Navigate to="/" replace />} />
             <Route
                 path="/admin/dashboard"
                 element={

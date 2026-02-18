@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { getAuthSession } from "../auth/storage";
 import type { Role } from "../auth/types";
 
@@ -9,12 +9,19 @@ type RoleGuardProps = {
 };
 
 const dashboardByRole: Record<Role, string> = {
-    ADMIN: "/dashboard/admin",
-    PROFESOR: "/dashboard/profesor",
-    ELEV: "/dashboard/elev",
+    ADMIN: "/admin/dashboard",
+    PROFESOR: "/profesor/dashboard",
+    ELEV: "/elev/dashboard",
+};
+
+const prefixByRole: Record<Role, string> = {
+    ADMIN: "/admin",
+    PROFESOR: "/profesor",
+    ELEV: "/elev",
 };
 
 const RoleGuard = ({ allowedRoles, children }: RoleGuardProps) => {
+    const location = useLocation();
     const session = getAuthSession();
 
     if (!session) {
@@ -22,10 +29,15 @@ const RoleGuard = ({ allowedRoles, children }: RoleGuardProps) => {
     }
 
     const role = session.user.role;
+    const allowedPrefix = prefixByRole[role];
+
+    if (!location.pathname.startsWith(allowedPrefix)) {
+        const redirectTo = dashboardByRole[role];
+        return <Navigate to={redirectTo} replace />;
+    }
 
     if (!allowedRoles.includes(role)) {
-        const redirectTo = dashboardByRole[role] ?? "/";
-        return <Navigate to={redirectTo} replace />;
+        return <Navigate to={dashboardByRole[role]} replace />;
     }
 
     return children;
