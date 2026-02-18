@@ -7,6 +7,9 @@ import PageNotFound from '../pages/404-page';
 import Contacts from "../pages/Contacts";
 import { paths } from "./paths";
 import FinancialStatus from "../pages/FinancialStatus.tsx";
+import AdminDashboard from "../pages/dashboard/AdminDashboard";
+import ProfesorDashboard from "../pages/dashboard/ProfesorDashboard";
+import ElevDashboard from "../pages/dashboard/ElevDashboard";
 
 function AppRoutes() {
     return (
@@ -19,6 +22,9 @@ function AppRoutes() {
             <Route path={paths.financialStatus} element={<FinancialStatus/>} />
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/signup" element={<Navigate to="/" replace />} />
+            <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/dashboard/profesor" element={<ProfesorDashboard />} />
+            <Route path="/dashboard/elev" element={<ElevDashboard />} />
             <Route path="*" element={<PageNotFound />} />
         </Routes>
     );
