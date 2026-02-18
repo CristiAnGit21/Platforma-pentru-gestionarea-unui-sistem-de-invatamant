@@ -1,11 +1,8 @@
 import { Navigate, Routes, Route, useLocation } from "react-router-dom";
-import Dashboard from "../pages/Dashboard";
 import Students from "../pages/Students";
 import Schedule from "../pages/Schedule";
 import Notifications from "../pages/Notifications";
 import PageNotFound from '../pages/404-page';
-import Contacts from "../pages/Contacts";
-import { paths } from "./paths";
 import FinancialStatus from "../pages/FinancialStatus.tsx";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ProfesorDashboard from "../pages/dashboard/ProfesorDashboard";
@@ -19,15 +16,15 @@ import { getAuthSession } from "../auth/storage";
 type RoleKey = "ADMIN" | "PROFESOR" | "ELEV";
 
 const dashboardByRole: Record<RoleKey, string> = {
-    ADMIN: "/dashboard/admin",
-    PROFESOR: "/dashboard/profesor",
-    ELEV: "/dashboard/elev",
+    ADMIN: "/admin/dashboard",
+    PROFESOR: "/profesor/dashboard",
+    ELEV: "/elev/dashboard",
 };
 
 const allowedPrefixesByRole: Record<RoleKey, string[]> = {
-    ADMIN: ["/dashboard/admin", "/orar", "/studenti", "/profesori"],
-    PROFESOR: ["/dashboard/profesor", "/catalog", "/notificari", "/studenti", "/raporteaza"],
-    ELEV: ["/dashboard/elev", "/catalog", "/orar", "/situatia-financiara", "/notificari", "/raporteaza"],
+    ADMIN: ["/admin/dashboard", "/admin/orar", "/admin/studenti", "/admin/profesori"],
+    PROFESOR: ["/profesor/dashboard", "/profesor/catalog", "/profesor/notificari", "/profesor/studenti", "/profesor/raporteaza"],
+    ELEV: ["/elev/dashboard", "/elev/catalog", "/elev/orar", "/elev/situatia-financiara", "/elev/notificari", "/elev/raporteaza"],
 };
 
 const RoleCatchAll = () => {
@@ -41,47 +38,38 @@ const RoleCatchAll = () => {
     const role = session.user.role as RoleKey;
     const allowedPrefixes = allowedPrefixesByRole[role] ?? [];
 
-    const matchedPrefix = allowedPrefixes.find((prefix) =>
-        location.pathname.startsWith(prefix)
-    );
+    const isAllowed = allowedPrefixes.some((prefix) => location.pathname.startsWith(prefix));
 
-    if (!matchedPrefix) {
+    if (!isAllowed) {
         const redirectTo = dashboardByRole[role] ?? "/dashboard/elev";
         return <Navigate to={redirectTo} replace />;
     }
 
-    // Path is within an allowed area but didn't match any explicit route;
-    // normalize to the closest allowed root.
-    return <Navigate to={matchedPrefix} replace />;
+    // Path is within an allowed area but didn't match any explicit route.
+    return <PageNotFound />;
 };
 
 function AppRoutes() {
     return (
         <Routes>
-            <Route path="/" element={<Dashboard />} />
             <Route
-                path={paths.students}
-                element={<Students />}
-            />
-            <Route
-                path={paths.orar}
+                path="/admin/orar"
                 element={
-                    <RoleGuard allowedRoles={["ADMIN", "PROFESOR", "ELEV"]}>
+                    <RoleGuard allowedRoles={["ADMIN"]}>
                         <Schedule />
                     </RoleGuard>
                 }
             />
             <Route
-                path={paths.notifications}
+                path="/profesor/notificari"
                 element={
-                    <RoleGuard allowedRoles={["PROFESOR", "ELEV"]}>
+                    <RoleGuard allowedRoles={["PROFESOR"]}>
                         <Notifications />
                     </RoleGuard>
                 }
             />
-            <Route path={paths.contacts} element={<Contacts/>} />
             <Route
-                path={paths.financialStatus}
+                path="/elev/situatia-financiara"
                 element={
                     <RoleGuard allowedRoles={["ELEV"]}>
                         <FinancialStatus/>
@@ -89,15 +77,15 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/studenti"
+                path="/admin/studenti"
                 element={
-                    <RoleGuard allowedRoles={["ADMIN", "PROFESOR"]}>
+                    <RoleGuard allowedRoles={["ADMIN"]}>
                         <Students />
                     </RoleGuard>
                 }
             />
             <Route
-                path="/profesori"
+                path="/admin/profesori"
                 element={
                     <RoleGuard allowedRoles={["ADMIN"]}>
                         <ProfesoriPage />
@@ -105,25 +93,57 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/catalog"
+                path="/profesor/catalog"
                 element={
-                    <RoleGuard allowedRoles={["PROFESOR", "ELEV"]}>
+                    <RoleGuard allowedRoles={["PROFESOR"]}>
                         <CatalogPage />
                     </RoleGuard>
                 }
             />
             <Route
-                path="/raporteaza"
+                path="/profesor/studenti"
                 element={
-                    <RoleGuard allowedRoles={["PROFESOR", "ELEV"]}>
+                    <RoleGuard allowedRoles={["PROFESOR"]}>
+                        <Students />
+                    </RoleGuard>
+                }
+            />
+            <Route
+                path="/profesor/raporteaza"
+                element={
+                    <RoleGuard allowedRoles={["PROFESOR"]}>
                         <RaporteazaPage />
+                    </RoleGuard>
+                }
+            />
+            <Route
+                path="/elev/catalog"
+                element={
+                    <RoleGuard allowedRoles={["ELEV"]}>
+                        <CatalogPage />
+                    </RoleGuard>
+                }
+            />
+            <Route
+                path="/elev/orar"
+                element={
+                    <RoleGuard allowedRoles={["ELEV"]}>
+                        <Schedule />
+                    </RoleGuard>
+                }
+            />
+            <Route
+                path="/elev/notificari"
+                element={
+                    <RoleGuard allowedRoles={["ELEV"]}>
+                        <Notifications />
                     </RoleGuard>
                 }
             />
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/signup" element={<Navigate to="/" replace />} />
             <Route
-                path="/dashboard/admin"
+                path="/admin/dashboard"
                 element={
                     <RoleGuard allowedRoles={["ADMIN"]}>
                         <AdminDashboard />
@@ -131,7 +151,7 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/dashboard/profesor"
+                path="/profesor/dashboard"
                 element={
                     <RoleGuard allowedRoles={["PROFESOR"]}>
                         <ProfesorDashboard />
@@ -139,7 +159,7 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/dashboard/elev"
+                path="/elev/dashboard"
                 element={
                     <RoleGuard allowedRoles={["ELEV"]}>
                         <ElevDashboard />
@@ -147,7 +167,6 @@ function AppRoutes() {
                 }
             />
             <Route path="*" element={<RoleCatchAll />} />
-            <Route path="*" element={<PageNotFound />} />
         </Routes>
     );
 }
