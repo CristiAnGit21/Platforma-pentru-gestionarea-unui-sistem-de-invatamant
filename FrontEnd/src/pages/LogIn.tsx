@@ -1,19 +1,29 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import loginImg from "../assets/designarena_image_imvn6gn3.png";
+import { mockLogin } from "../auth/mockAuth";
+import { setAuthSession } from "../auth/storage";
 
 const LogIn = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogin = () => {
-        if (email === "admin@test.com" && password === "1234") {
+    const handleLogin = async () => {
+        setError("");
+        setIsLoading(true);
+
+        try {
+            const session = await mockLogin(email, password);
+            setAuthSession(session);
             localStorage.setItem("auth", "true");
             window.location.reload();
-        } else {
-            setError("Email sau parolă incorectă");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Email sau parolă incorectă");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -68,9 +78,10 @@ const LogIn = () => {
 
                             <button
                                 onClick={handleLogin}
-                                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                                disabled={isLoading}
+                                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
                             >
-                                Login
+                                {isLoading ? "Loading..." : "Login"}
                             </button>
                         </div>
                     </div>
