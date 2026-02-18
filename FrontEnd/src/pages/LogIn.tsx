@@ -19,7 +19,7 @@ const LogIn = () => {
             const session = await mockLogin(email, password);
             setAuthSession(session);
             localStorage.setItem("auth", "true");
-            window.location.reload();
+            window.location.assign("/");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Email sau parolă incorectă");
         } finally {
