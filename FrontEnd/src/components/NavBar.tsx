@@ -41,50 +41,56 @@ const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "ELEV", NavItem[]> = {
 };
 
 type Props = {
-  selectedPage: string;
-  setSelectedPage: (value: string) => void;
+    selectedPage: string;
+    setSelectedPage: (value: string) => void;
 }
 
 const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const role = getAuthSession()?.user.role;
 
-  return (
-    <>
-      <div
-        className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
-          isExpanded ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsExpanded(false)}
-      />
+    return (
+        <>
+            {/* Overlay */}
+            <div
+                className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
+                    isExpanded ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={() => setIsExpanded(false)}
+            />
 
-      <nav
-        className={`fixed left-0 top-0 h-full bg-white shadow-2xl z-50 transition-all duration-300 ease-in-out ${
-          isExpanded ? 'w-64' : 'w-24'
-        }`}
-      >
-        <div className="flex flex-col h-full p-4">
-
-          {/* Logo */}
-          <div
-            className={`transition-all duration-300 overflow-hidden mb-6 ${
-              isExpanded ? 'opacity-100 h-auto' : 'opacity-0 h-0'
-            }`}
-          >
-            <div className="flex items-center justify-center">
-              <img src={Logo} alt="logo" />
-            </div>
-          </div>
-
-          {/* Toggle button */}
-          <div className="w-full flex justify-center mb-4">
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center justify-center hover:bg-gray-100 p-3 rounded-xl transition-colors text-gray-600 w-12 h-12"
+            {/* Navbar */}
+            <nav
+                className={`fixed left-0 top-0 h-screen bg-white shadow-2xl z-50 transition-all duration-300 ease-in-out ${
+                    isExpanded ? 'w-64' : 'w-24'
+                }`}
             >
-              <Menu size={27} />
-            </button>
-          </div>
+                <div className="flex flex-col h-full p-4">
+
+                    {/* Logo (mai mare, dimensiune fixă) */}
+                    <div
+                        className={`transition-all duration-300 overflow-hidden mb-6 ${
+                            isExpanded ? 'opacity-100 h-auto' : 'opacity-0 h-0'
+                        }`}
+                    >
+                        <div className="flex items-center justify-center">
+                            <img
+                                src={Logo}
+                                alt="logo"
+                                className="h-30 w-auto object-contain"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Toggle button */}
+                    <div className="w-full flex justify-center mb-4">
+                        <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className="flex items-center justify-center hover:bg-gray-100 p-3 rounded-xl transition-colors text-gray-600 w-12 h-12"
+                        >
+                            <Menu size={27} />
+                        </button>
+                    </div>
 
           {/* Links */}
           <div className="flex flex-col gap-4 flex-1 items-center">
@@ -101,56 +107,69 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
             ))}
           </div>
 
-          {/* Logout */}
-          <div className="mt-auto pt-4 border-t w-full flex justify-center">
-            <button
-              className={`transition-all duration-300 bg-red-500 text-white flex items-center justify-center rounded-xl h-12 ${
-                isExpanded ? 'w-full px-4 gap-2' : 'w-12 px-0'
-              } hover:bg-red-600`}
-              onClick={() => {
-                clearAuthSession();
-                localStorage.removeItem("auth"); // legacy clean
-                setSelectedPage("Acasă");
-                window.location.href = "/login"; // hard redirect garantat
-              }}
-            >
-              <LogOut size={20} className="shrink-0" />
-              {isExpanded && (
-                <span className="whitespace-nowrap overflow-hidden opacity-100 transition-opacity">
+                    {/* Logout */}
+                    <div className="mt-auto pt-4 border-t w-full flex justify-center">
+                        <button
+                            className={`transition-all duration-300 bg-red-500 text-white flex items-center justify-center rounded-xl h-12 ${
+                                isExpanded ? 'w-full px-4 gap-2' : 'w-12 px-0'
+                            } hover:bg-red-600`}
+                            onClick={() => {
+                                clearAuthSession();
+                                localStorage.removeItem("auth");
+                                setSelectedPage("Acasă");
+                                window.location.href = "/login";
+                            }}
+                        >
+                            <LogOut size={20} className="shrink-0" />
+                            {isExpanded && (
+                                <span className="whitespace-nowrap font-medium">
                   Ieșire
                 </span>
-              )}
-            </button>
-          </div>
+                            )}
+                        </button>
+                    </div>
 
-        </div>
-      </nav>
-    </>
-  );
+                </div>
+            </nav>
+        </>
+    );
 };
 
-const LinkWithIcon = ({ icon, page, setSelectedPage, isExpanded, selectedPage, path }: any) => {
-  const isSelected = selectedPage === page;
+const LinkWithIcon = ({
+                          icon,
+                          page,
+                          setSelectedPage,
+                          isExpanded,
+                          selectedPage,
+                          path
+                      }: any) => {
 
-  return (
-    <Link to={path} className="w-full flex justify-center no-underline text-inherit">
-      <div
-        className={`flex items-center transition-all duration-300 cursor-pointer rounded-xl h-12 ${
-          isExpanded ? 'w-full px-4 gap-3 justify-start' : 'w-12 justify-center'
-        } ${isSelected ? 'bg-violet-100 text-violet-700' : 'hover:bg-gray-100 text-gray-600'}`}
-        onClick={() => setSelectedPage(page)}
-      >
-        <div className="flex items-center justify-center shrink-0">
-          {icon}
-        </div>
-        {isExpanded && (
-          <span className="whitespace-nowrap font-medium opacity-100 transition-opacity">
+    const isSelected = selectedPage === page;
+
+    return (
+        <Link to={path} className="w-full flex justify-center no-underline text-inherit">
+            <div
+                className={`flex items-center transition-all duration-300 cursor-pointer rounded-xl h-12 ${
+                    isExpanded ? 'w-full px-4 gap-3 justify-start' : 'w-12 justify-center'
+                } ${
+                    isSelected
+                        ? 'bg-violet-100 text-violet-700'
+                        : 'hover:bg-gray-100 text-gray-600'
+                }`}
+                onClick={() => setSelectedPage(page)}
+            >
+                <div className="flex items-center justify-center shrink-0">
+                    {icon}
+                </div>
+
+                {isExpanded && (
+                    <span className="whitespace-nowrap font-medium">
             {page}
           </span>
-        )}
-      </div>
-    </Link>
-  );
+                )}
+            </div>
+        </Link>
+    );
 };
 
 export default NavBar;
