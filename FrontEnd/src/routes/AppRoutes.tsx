@@ -10,6 +10,9 @@ import FinancialStatus from "../pages/FinancialStatus.tsx";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ProfesorDashboard from "../pages/dashboard/ProfesorDashboard";
 import ElevDashboard from "../pages/dashboard/ElevDashboard";
+import CatalogPage from "../pages/placeholders/CatalogPage";
+import ProfesoriPage from "../pages/placeholders/ProfesoriPage";
+import RaporteazaPage from "../pages/placeholders/RaporteazaPage";
 
 function AppRoutes() {
     return (
@@ -20,6 +23,10 @@ function AppRoutes() {
             <Route path={paths.notifications} element={<Notifications />} />
             <Route path={paths.contacts} element={<Contacts/>} />
             <Route path={paths.financialStatus} element={<FinancialStatus/>} />
+            <Route path="/studenti" element={<Students />} />
+            <Route path="/profesori" element={<ProfesoriPage />} />
+            <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/raporteaza" element={<RaporteazaPage />} />
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/signup" element={<Navigate to="/" replace />} />
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
