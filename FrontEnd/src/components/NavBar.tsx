@@ -18,25 +18,25 @@ type NavItem = { page: string; path: string; icon: ReactElement };
 
 const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "ELEV", NavItem[]> = {
   ADMIN: [
-    { page: "Dashboard", path: "/dashboard/admin", icon: <Home size={27} /> },
-    { page: "Orar", path: "/orar", icon: <Calendar size={27} /> },
-    { page: "Studenți", path: "/studenti", icon: <IdCard size={27} /> },
-    { page: "Profesori", path: "/profesori", icon: <User size={27} /> },
+    { page: "Dashboard", path: "/admin/dashboard", icon: <Home size={27} /> },
+    { page: "Orar", path: "/admin/orar", icon: <Calendar size={27} /> },
+    { page: "Studenți", path: "/admin/studenti", icon: <IdCard size={27} /> },
+    { page: "Profesori", path: "/admin/profesori", icon: <User size={27} /> },
   ],
   PROFESOR: [
-    { page: "Dashboard", path: "/dashboard/profesor", icon: <Home size={27} /> },
-    { page: "Catalog", path: "/catalog", icon: <BookOpen size={27} /> },
-    { page: "Notificări", path: "/notificari", icon: <Bell size={27} /> },
-    { page: "Studenți", path: "/studenti", icon: <IdCard size={27} /> },
-    { page: "Raportează o problemă", path: "/raporteaza", icon: <MessageCircleWarning size={27} /> },
+    { page: "Dashboard", path: "/profesor/dashboard", icon: <Home size={27} /> },
+    { page: "Catalog", path: "/profesor/catalog", icon: <BookOpen size={27} /> },
+    { page: "Notificări", path: "/profesor/notificari", icon: <Bell size={27} /> },
+    { page: "Studenți", path: "/profesor/studenti", icon: <IdCard size={27} /> },
+    { page: "Raportează o problemă", path: "/profesor/raporteaza", icon: <MessageCircleWarning size={27} /> },
   ],
   ELEV: [
-    { page: "Dashboard", path: "/dashboard/elev", icon: <Home size={27} /> },
-    { page: "Catalog", path: "/catalog", icon: <BookOpen size={27} /> },
-    { page: "Orar", path: "/orar", icon: <Calendar size={27} /> },
-    { page: "Situația financiară", path: "/situatia-financiara", icon: <Receipt size={27} /> },
-    { page: "Notificări", path: "/notificari", icon: <Bell size={27} /> },
-    { page: "Raportează o problemă", path: "/raporteaza", icon: <MessageCircleWarning size={27} /> },
+    { page: "Dashboard", path: "/elev/dashboard", icon: <Home size={27} /> },
+    { page: "Catalog", path: "/elev/catalog", icon: <BookOpen size={27} /> },
+    { page: "Orar", path: "/elev/orar", icon: <Calendar size={27} /> },
+    { page: "Situația financiară", path: "/elev/situatia-financiara", icon: <Receipt size={27} /> },
+    { page: "Notificări", path: "/elev/notificari", icon: <Bell size={27} /> },
+    { page: "Raportează o problemă", path: "/elev/raporteaza", icon: <MessageCircleWarning size={27} /> },
   ],
 };
 
