@@ -1,9 +1,9 @@
 ﻿import PageNotFound from './404-page';
 
-function Students(){
+function FinancialStatus(){
     return (
         <PageNotFound />
     )
-    
+
 }
-export default Students
+export default FinancialStatus
