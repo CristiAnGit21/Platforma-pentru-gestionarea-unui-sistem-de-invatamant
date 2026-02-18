@@ -1,4 +1,4 @@
-﻿import { Routes,Route } from "react-router-dom";
+import { Navigate, Routes,Route } from "react-router-dom";
 import Dashboard from "../pages/Dashboard";
 import Students from "../pages/Students";
 import Schedule from "../pages/Schedule";
@@ -17,6 +17,8 @@ function AppRoutes() {
             <Route path={paths.notifications} element={<Notifications />} />
             <Route path={paths.contacts} element={<Contacts/>} />
             <Route path={paths.financialStatus} element={<FinancialStatus/>} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/signup" element={<Navigate to="/" replace />} />
             <Route path="*" element={<PageNotFound />} />
         </Routes>
     );
