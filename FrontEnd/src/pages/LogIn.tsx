@@ -19,7 +19,14 @@ const LogIn = () => {
             const session = await mockLogin(email, password);
             setAuthSession(session);
             localStorage.setItem("auth", "true");
-            window.location.assign("/");
+
+            if (session.user.role === "ADMIN") {
+                window.location.assign("/admin/dashboard");
+            } else if (session.user.role === "PROFESOR") {
+                window.location.assign("/profesor/dashboard");
+            } else {
+                window.location.assign("/elev/dashboard");
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Email sau parolă incorectă");
         } finally {
