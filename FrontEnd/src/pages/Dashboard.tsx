@@ -21,7 +21,7 @@ const Dashboard = () => {
                     </div>
 
                     <div className="flex items-center gap-4 md:gap-6 text-slate-600 bg-white p-3 px-5 rounded-xl shadow-sm border border-slate-100 w-full md:w-auto justify-between md:justify-start">
-                        <span className="font-medium text-sm md:text-base">📅 Luni, 12 Februarie</span>
+                        <span className="font-medium text-sm md:text-base">📅 Miercuri, 18 Februarie</span>
                         <button className="relative p-1 hover:bg-slate-50 rounded-full transition-colors">
                             <span className="text-xl">🔔</span>
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full border-2 border-white">
