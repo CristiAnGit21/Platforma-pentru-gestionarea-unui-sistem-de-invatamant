@@ -4,11 +4,13 @@ import SignUp from "./pages/SignUp";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import NavBar from "./components/NavBar";
+import { getAuthSession } from "./auth/storage";
 
 
 function App() {
     const [selectedPage, setSelectedPage] = useState("Acasă");
-    const isAuth = localStorage.getItem("auth") === "true";
+    const session = getAuthSession();
+    const isAuth = !!session;
 
     return (
         <BrowserRouter>
