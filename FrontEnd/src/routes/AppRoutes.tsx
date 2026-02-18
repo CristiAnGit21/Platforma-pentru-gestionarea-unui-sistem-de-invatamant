@@ -1,4 +1,4 @@
-import { Navigate, Routes,Route } from "react-router-dom";
+import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import Dashboard from "../pages/Dashboard";
 import Students from "../pages/Students";
 import Schedule from "../pages/Schedule";
@@ -14,6 +14,46 @@ import CatalogPage from "../pages/placeholders/CatalogPage";
 import ProfesoriPage from "../pages/placeholders/ProfesoriPage";
 import RaporteazaPage from "../pages/placeholders/RaporteazaPage";
 import RoleGuard from "./RoleGuard";
+import { getAuthSession } from "../auth/storage";
+
+type RoleKey = "ADMIN" | "PROFESOR" | "ELEV";
+
+const dashboardByRole: Record<RoleKey, string> = {
+    ADMIN: "/dashboard/admin",
+    PROFESOR: "/dashboard/profesor",
+    ELEV: "/dashboard/elev",
+};
+
+const allowedPrefixesByRole: Record<RoleKey, string[]> = {
+    ADMIN: ["/dashboard/admin", "/orar", "/studenti", "/profesori"],
+    PROFESOR: ["/dashboard/profesor", "/catalog", "/notificari", "/studenti", "/raporteaza"],
+    ELEV: ["/dashboard/elev", "/catalog", "/orar", "/situatia-financiara", "/notificari", "/raporteaza"],
+};
+
+const RoleCatchAll = () => {
+    const location = useLocation();
+    const session = getAuthSession();
+
+    if (!session) {
+        return <Navigate to="/login" replace />;
+    }
+
+    const role = session.user.role as RoleKey;
+    const allowedPrefixes = allowedPrefixesByRole[role] ?? [];
+
+    const matchedPrefix = allowedPrefixes.find((prefix) =>
+        location.pathname.startsWith(prefix)
+    );
+
+    if (!matchedPrefix) {
+        const redirectTo = dashboardByRole[role] ?? "/dashboard/elev";
+        return <Navigate to={redirectTo} replace />;
+    }
+
+    // Path is within an allowed area but didn't match any explicit route;
+    // normalize to the closest allowed root.
+    return <Navigate to={matchedPrefix} replace />;
+};
 
 function AppRoutes() {
     return (
@@ -106,6 +146,7 @@ function AppRoutes() {
                     </RoleGuard>
                 }
             />
+            <Route path="*" element={<RoleCatchAll />} />
             <Route path="*" element={<PageNotFound />} />
         </Routes>
     );
