@@ -42,7 +42,7 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
             >
                 <div className="flex flex-col h-full p-4">
 
-                    {/* Logo*/}
+                    {/* Logo (mai mare, dimensiune fixă) */}
                     <div
                         className={`transition-all duration-300 overflow-hidden mb-6 ${
                             isExpanded ? 'opacity-100 h-auto' : 'opacity-0 h-0'
@@ -52,7 +52,7 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
                             <img
                                 src={Logo}
                                 alt="logo"
-                                className="h-28 w-auto object-contain"
+                                className="h-30 w-auto object-contain"
                             />
                         </div>
                     </div>
@@ -67,8 +67,12 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
                         </button>
                     </div>
 
-                    {/* Links (scrollabile) */}
-                    <div className="flex flex-col gap-4 flex-1 items-center overflow-y-auto pr-1">
+                    {/* Links */}
+                    <div
+                        className={`flex flex-col gap-4 flex-1 items-center ${
+                            isExpanded ? 'overflow-y-auto pr-1' : 'overflow-hidden'
+                        }`}
+                    >
                         <LinkWithIcon icon={<Home size={27} />} page="Acasă" path="/" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<BookOpen size={27} />} page="Catalog" path="/students" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                         <LinkWithIcon icon={<Calendar size={27} />} page="Orar" path="/orar" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
@@ -80,7 +84,7 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
                         <LinkWithIcon icon={<Phone size={27} />} page="Contacte" path="/contacte" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
                     </div>
 
-                    {/* Logout (rămâne jos) */}
+                    {/* Logout */}
                     <div className="mt-auto pt-4 border-t w-full flex justify-center">
                         <button
                             className={`transition-all duration-300 bg-red-500 text-white flex items-center justify-center rounded-xl h-12 ${
