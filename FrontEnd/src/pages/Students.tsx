@@ -23,20 +23,20 @@ const StudentsPage: React.FC = () => {
     const totalStudents = Object.values(groupedStudents).flat().length;
 
     return (
-        <div className="w-full">
+        <div className="w-full max-w-full overflow-x-hidden box-border px-4 sm:px-6 lg:px-8 py-6">
             {/* Header Section */}
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+            <header className="flex flex-col gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Student Management</h1>
-                    <p className="text-slate-500 font-medium">Manage student grades, attendance, and groups.</p>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Student Management</h1>
+                    <p className="text-slate-500 font-medium text-sm sm:text-base">Manage student grades, attendance, and groups.</p>
                 </div>
 
-                <div className="flex items-center space-x-4">
-                    <div className="relative group">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="relative group flex-1 min-w-0">
                         <input
                             type="text"
                             placeholder="Search students..."
-                            className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl w-64 focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all shadow-sm"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all shadow-sm text-sm"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -47,7 +47,7 @@ const StudentsPage: React.FC = () => {
 
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center space-x-2 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95"
+                        className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 text-sm whitespace-nowrap shrink-0"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -58,22 +58,22 @@ const StudentsPage: React.FC = () => {
             </header>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                    <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Total Students</p>
-                    <p className="text-3xl font-extrabold text-slate-900">{totalStudents}</p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8">
+                <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm">
+                    <p className="text-slate-500 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Total Students</p>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{totalStudents}</p>
                 </div>
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                    <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Active Groups</p>
-                    <p className="text-3xl font-extrabold text-indigo-600">{INITIAL_GROUPS.length}</p>
+                <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm">
+                    <p className="text-slate-500 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Active Groups</p>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-indigo-600">{INITIAL_GROUPS.length}</p>
                 </div>
-                <div className="bg-indigo-600 p-6 rounded-3xl shadow-lg shadow-indigo-100 text-white">
-                    <p className="text-indigo-100 text-sm font-semibold uppercase tracking-wider mb-1">Avg. Attendance</p>
-                    <p className="text-3xl font-extrabold">88.5%</p>
+                <div className="bg-indigo-600 p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl shadow-lg shadow-indigo-100 text-white">
+                    <p className="text-indigo-100 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Avg. Attendance</p>
+                    <p className="text-2xl sm:text-3xl font-extrabold">88.5%</p>
                 </div>
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                    <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Top Group</p>
-                    <p className="text-3xl font-extrabold text-slate-900">TI-221</p>
+                <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm">
+                    <p className="text-slate-500 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Top Group</p>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">TI-221</p>
                 </div>
             </div>
 
@@ -91,7 +91,6 @@ const StudentsPage: React.FC = () => {
                             key={groupName}
                             name={groupName}
                             students={filteredStudents}
-                            /* Fix: rename onDeleteStudent to onDelete to match the interface in GroupSection */
                             onDelete={deleteStudent}
                             onAddGrade={addGrade}
                             onDeleteGrade={deleteGrade}

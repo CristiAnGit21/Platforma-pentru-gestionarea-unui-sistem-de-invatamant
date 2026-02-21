@@ -48,7 +48,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({
             </button>
 
             {isOpen && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 animate-fade-in">
                     {students.length === 0 ? (
                         <div className="col-span-full py-10 flex flex-col items-center justify-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
                             <p className="text-slate-400 text-sm font-medium">No students in this group yet.</p>
