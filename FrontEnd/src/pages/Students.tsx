@@ -1,127 +1,270 @@
-﻿
-import React, { useState } from 'react';
-import GroupSection from '../components/GroupSection';
-import AddStudentModal from '../components/AddStudentModal';
-import { useStudents } from '../hooks/useStudents';
-import { INITIAL_GROUPS } from '../constants';
-import type {  Student } from '../types';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { devGet, devSet } from "../utils/devStorage";
 
-const StudentsPage: React.FC = () => {
-    const {
-        groupedStudents,
-        addStudent,
-        deleteStudent,
-        addGrade,
-        deleteGrade,
-        updateStudent
-    } = useStudents();
+const STUDENTS_KEY = "utm_students_v1";
 
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+type StudentStatus = "UNCONFIRMED" | "ACTIVE";
 
-    // Calculate total students across all groups
-    const totalStudents = Object.values(groupedStudents).flat().length;
-
-    return (
-        <div className="w-full max-w-full overflow-x-hidden box-border px-4 sm:px-6 lg:px-8 py-6">
-            {/* Header Section */}
-            <header className="flex flex-col gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">Gestionare Studenți</h1>
-                    <p className="text-gray-500 font-medium text-sm sm:text-base">Gestionați notele, prezența și grupele studenților.</p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <div className="relative group flex-1 min-w-0">
-                        <input
-                            type="text"
-                            placeholder="Caută studenți..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:outline-none transition-all shadow-sm text-sm"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
-                        <svg className="w-5 h-5 absolute left-3 top-3 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="bg-purple-600 text-white px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-purple-700 shadow-lg shadow-purple-100 transition-all active:scale-95 text-sm whitespace-nowrap shrink-0"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span>Adaugă Student</span>
-                    </button>
-                </div>
-            </header>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8">
-                <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
-                    <p className="text-gray-500 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Total Studenți</p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-gray-800">{totalStudents}</p>
-                </div>
-                <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
-                    <p className="text-gray-500 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Grupe Active</p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-purple-600">{INITIAL_GROUPS.length}</p>
-                </div>
-                <div className="bg-purple-600 p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl shadow-lg shadow-purple-100 text-white">
-                    <p className="text-purple-100 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Prezență Medie</p>
-                    <p className="text-2xl sm:text-3xl font-extrabold">88.5%</p>
-                </div>
-                <div className="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
-                    <p className="text-gray-500 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Grupa Fruntașă</p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-gray-800">TI-221</p>
-                </div>
-            </div>
-
-            {/* Student Groups Content */}
-            <div className="space-y-4">
-                {Object.entries(groupedStudents).map(([groupName, students]) => {
-                    const filteredStudents = (students as Student[]).filter(s =>
-                        `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
-                    );
-
-                    if (searchTerm && filteredStudents.length === 0) return null;
-
-                    return (
-                        <GroupSection
-                            key={groupName}
-                            name={groupName}
-                            students={filteredStudents}
-                            onDelete={deleteStudent}
-                            onAddGrade={addGrade}
-                            onDeleteGrade={deleteGrade}
-                            onUpdateAttendance={(id, val) => updateStudent(id, { attendance: val })}
-                        />
-                    );
-                })}
-            </div>
-
-            {isAddModalOpen && (
-                <AddStudentModal
-                    onClose={() => setIsAddModalOpen(false)}
-                    onAdd={addStudent}
-                    groups={INITIAL_GROUPS}
-                />
-            )}
-
-            <style>{`
-        @keyframes scale-up {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-scale-up { animation: scale-up 0.2s ease-out forwards; }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-      `}</style>
-        </div>
-    );
+type Student = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: StudentStatus;
 };
 
-export default StudentsPage;
+function toStudentStatus(v: unknown): StudentStatus {
+  const s = String(v ?? "UNCONFIRMED").trim().toUpperCase();
+  return s === "ACTIVE" ? "ACTIVE" : "UNCONFIRMED";
+}
+
+type RawStudent = {
+  id?: unknown;
+  name?: unknown;
+  fullName?: unknown;
+  email?: unknown;
+  role?: unknown;
+  status?: unknown;
+};
+
+function loadStudents(): Student[] {
+  const raw = devGet<unknown[]>(STUDENTS_KEY, []);
+  if (!Array.isArray(raw)) return [];
+
+  return (raw as RawStudent[])
+    .map(
+      (s): Student => ({
+        id: String(s.id ?? ""),
+        name: String(s.name ?? s.fullName ?? ""),
+        email: String(s.email ?? ""),
+        role: String(s.role ?? "Student"),
+        status: toStudentStatus(s.status),
+      })
+    )
+    .filter((s) => Boolean(s.id) && Boolean(s.email));
+}
+
+/** Persist a student list and return it (for use in setState callbacks). */
+function saveStudents(students: Student[]): Student[] {
+  devSet(STUDENTS_KEY, students);
+  return students;
+}
+
+export default function Students() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [activeTab, setActiveTab] = useState<"Neconfirmați" | "Activi">(
+    "Neconfirmați"
+  );
+  const [query, setQuery] = useState("");
+
+  // IMPORTANT: funcție de sync pe care o putem apela oricând
+  // NOTE: We do NOT write back after reading — that was the original bug.
+  //       Writing is done explicitly only in mutation handlers below.
+  const syncFromStorage = useCallback(() => {
+    const loaded = loadStudents();
+    setStudents(loaded);
+  }, []);
+
+  // 1) Load pe mount
+  useEffect(() => {
+    syncFromStorage();
+  }, [syncFromStorage]);
+
+  // 2) Re-sync când revii în tab (după ce ai setat rol din Dashboard)
+  useEffect(() => {
+    const onFocus = () => syncFromStorage();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [syncFromStorage]);
+
+  // NOTE: There is intentionally NO useEffect that writes students back to
+  // storage on every render. That pattern was causing the empty-array race:
+  //   mount → Effect(load) schedules setStudents(loaded) [async]
+  //         → Effect(persist) fires immediately with students=[] → overwrites storage
+  // Instead, every mutation explicitly calls saveStudents() inside the updater.
+
+  const unconfirmed = useMemo(
+    () => students.filter((s) => s.status === "UNCONFIRMED"),
+    [students]
+  );
+  const active = useMemo(
+    () => students.filter((s) => s.status === "ACTIVE"),
+    [students]
+  );
+
+  const currentList = activeTab === "Neconfirmați" ? unconfirmed : active;
+
+  const q = query.trim().toLowerCase();
+  const filtered =
+    q === ""
+      ? currentList
+      : currentList.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.email.toLowerCase().includes(q)
+      );
+
+  const handleConfirm = (id: string) => {
+    setStudents((prev) => {
+      const next = prev.map((s) =>
+        s.id === id ? { ...s, status: "ACTIVE" as StudentStatus } : s
+      );
+      return saveStudents(next);
+    });
+  };
+
+  const handleReject = (id: string) => {
+    setStudents((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      return saveStudents(next);
+    });
+  };
+
+  const handleDeactivate = (id: string) => {
+    setStudents((prev) => {
+      const next = prev.map((s) =>
+        s.id === id ? { ...s, status: "UNCONFIRMED" as StudentStatus } : s
+      );
+      return saveStudents(next);
+    });
+  };
+
+  const emptyListMessage =
+    activeTab === "Neconfirmați"
+      ? "Nu există studenți neconfirmați."
+      : "Nu există studenți activi.";
+
+  return (
+    <div className="p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">
+            Studenți
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Gestionare studenți și conturi (front-only)
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <div className="flex flex-col gap-4 mb-4">
+            <div className="flex gap-2 border-b border-gray-100">
+              <button
+                type="button"
+                onClick={() => setActiveTab("Neconfirmați")}
+                className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${activeTab === "Neconfirmați"
+                    ? "bg-violet-100 text-violet-700 border-b-2 border-violet-600 -mb-px"
+                    : "text-gray-600 hover:bg-gray-50"
+                  }`}
+              >
+                Neconfirmați
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("Activi")}
+                className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${activeTab === "Activi"
+                    ? "bg-violet-100 text-violet-700 border-b-2 border-violet-600 -mb-px"
+                    : "text-gray-600 hover:bg-gray-50"
+                  }`}
+              >
+                Activi
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <input
+                type="search"
+                placeholder="Caută după nume sau email"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none placeholder:text-gray-400"
+              />
+
+              <button
+                type="button"
+                onClick={syncFromStorage}
+                className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50"
+              >
+                Reîncarcă din storage
+              </button>
+            </div>
+
+            <div className="text-xs text-gray-400">
+              Total: {students.length} | Neconfirmați: {unconfirmed.length} |
+              Activi: {active.length}
+            </div>
+          </div>
+
+          {currentList.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">{emptyListMessage}</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">
+              Nu am găsit rezultate pentru &quot;{query}&quot;.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="pb-3 pr-4 font-semibold text-gray-800">
+                      Nume
+                    </th>
+                    <th className="pb-3 pr-4 font-semibold text-gray-800">
+                      Email
+                    </th>
+                    <th className="pb-3 pr-4 font-semibold text-gray-800">
+                      Status
+                    </th>
+                    <th className="pb-3 font-semibold text-gray-800">Acțiuni</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((s) => (
+                    <tr
+                      key={s.id}
+                      className="border-b border-gray-100 last:border-b-0"
+                    >
+                      <td className="py-3 pr-4 font-medium text-gray-800">
+                        {s.name}
+                      </td>
+                      <td className="py-3 pr-4 text-gray-600">{s.email}</td>
+                      <td className="py-3 pr-4 text-gray-600">{s.status}</td>
+                      <td className="py-3 flex flex-wrap gap-2">
+                        {activeTab === "Neconfirmați" ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleConfirm(s.id)}
+                              className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700"
+                            >
+                              Confirmă
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(s.id)}
+                              className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                            >
+                              Respinge
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleDeactivate(s.id)}
+                            className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                          >
+                            Dezactivează
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
