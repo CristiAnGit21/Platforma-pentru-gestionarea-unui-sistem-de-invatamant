@@ -1,15 +1,24 @@
 import { useState } from "react";
 
-const pendingUsers = [
+const initialPendingUsers = [
     { id: "1", name: "Ion Popescu", email: "ion@test.com" },
     { id: "2", name: "Maria Ionescu", email: "maria@test.com" },
 ];
 
 const AdminDashboard = () => {
+    const [pendingUsers, setPendingUsers] = useState(initialPendingUsers);
+    const [message, setMessage] = useState<string | null>(null);
     const [roleByUserId, setRoleByUserId] = useState<Record<string, string>>({
         "1": "Profesor",
         "2": "Student",
     });
+
+    const handleSetRole = (user: { id: string; name: string }) => {
+        const selectedRole = roleByUserId[user.id] ?? "Profesor";
+        setPendingUsers((prev) => prev.filter((u) => u.id !== user.id));
+        setMessage(`Rolul pentru ${user.name} a fost setat ca ${selectedRole}`);
+        setTimeout(() => setMessage(null), 3000);
+    };
 
     return (
         <div className="p-6">
@@ -20,6 +29,12 @@ const AdminDashboard = () => {
                         Administrare platformă, utilizatori și rapoarte.
                     </p>
                 </div>
+
+                {message && (
+                    <div className="mb-4 bg-green-50 text-green-700 border border-green-200 rounded-lg p-3">
+                        {message}
+                    </div>
+                )}
 
                 <div className="mt-8 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                     <h2 className="text-xl font-bold text-gray-800 mb-4">Utilizatori în așteptare</h2>
@@ -43,6 +58,7 @@ const AdminDashboard = () => {
                                 </select>
                                 <button
                                     type="button"
+                                    onClick={() => handleSetRole(user)}
                                     className="px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
                                 >
                                     Setează rol
