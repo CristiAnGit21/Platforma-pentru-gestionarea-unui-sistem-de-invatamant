@@ -1,4 +1,4 @@
-﻿import PageNotFound from './404-page';
+import PageNotFound from './404-page';
 
 function Students(){
     return (
