@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Logo from '@/assets/logo.png';
 import { IdCard,
 User,
@@ -41,13 +41,20 @@ const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "ELEV", NavItem[]> = {
 };
 
 type Props = {
-    selectedPage: string;
-    setSelectedPage: (value: string) => void;
+    selectedPage?: string;
+    setSelectedPage?: (value: string) => void;
 }
 
-const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
+const NavBar = ({ setSelectedPage }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const role = getAuthSession()?.user.role;
+  const location = useLocation();
+
+  // Derive selected page from current URL path
+  const currentPath = location.pathname;
+  const items = navItemsByRole[role ?? 'ELEV'];
+  const matchedItem = items.find(item => currentPath === item.path || currentPath.startsWith(item.path + '/'));
+  const selectedPage = matchedItem?.page ?? '';
 
     return (
         <>
@@ -116,7 +123,7 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
                             onClick={() => {
                                 clearAuthSession();
                                 localStorage.removeItem("auth");
-                                setSelectedPage("Acasă");
+                                setSelectedPage?.("Acasă");
                                 window.location.href = "/login";
                             }}
                         >
@@ -156,7 +163,7 @@ const LinkWithIcon = ({
                         ? 'bg-violet-100 text-violet-700'
                         : 'hover:bg-gray-100 text-gray-600'
                 }`}
-                onClick={() => setSelectedPage(page)}
+                onClick={() => setSelectedPage?.(page)}
             >
                 <div className="flex items-center justify-center shrink-0">
                     {icon}
