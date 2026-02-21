@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 
 const STORAGE_KEY = "utm_pending_users_v1";
+const STUDENTS_KEY = "utm_students_v1";
+const PROFESSORS_KEY = "utm_professors_v1";
 
 const initialPendingUsers = [
     { id: "1", name: "Ion Popescu", email: "ion@test.com" },
@@ -31,8 +33,38 @@ const AdminDashboard = () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(pendingUsers));
     }, [pendingUsers]);
 
-    const handleSetRole = (user: { id: string; name: string }) => {
+    const handleSetRole = (user: { id: string; name: string; email: string }) => {
         const selectedRole = roleByUserId[user.id] ?? "Profesor";
+        const newUser = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: selectedRole,
+            status: "UNCONFIRMED",
+        };
+
+        if (selectedRole === "Student") {
+            try {
+                const stored = localStorage.getItem(STUDENTS_KEY);
+                const list = stored ? JSON.parse(stored) : [];
+                const arr = Array.isArray(list) ? list : [];
+                arr.push(newUser);
+                localStorage.setItem(STUDENTS_KEY, JSON.stringify(arr));
+            } catch {
+                localStorage.setItem(STUDENTS_KEY, JSON.stringify([newUser]));
+            }
+        } else if (selectedRole === "Profesor") {
+            try {
+                const stored = localStorage.getItem(PROFESSORS_KEY);
+                const list = stored ? JSON.parse(stored) : [];
+                const arr = Array.isArray(list) ? list : [];
+                arr.push(newUser);
+                localStorage.setItem(PROFESSORS_KEY, JSON.stringify(arr));
+            } catch {
+                localStorage.setItem(PROFESSORS_KEY, JSON.stringify([newUser]));
+            }
+        }
+
         setPendingUsers((prev) => prev.filter((u) => u.id !== user.id));
         setMessage(`Rolul pentru ${user.name} a fost setat ca ${selectedRole}`);
         setTimeout(() => setMessage(null), 3000);
