@@ -1,17 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const STORAGE_KEY = "utm_pending_users_v1";
 
 const initialPendingUsers = [
     { id: "1", name: "Ion Popescu", email: "ion@test.com" },
     { id: "2", name: "Maria Ionescu", email: "maria@test.com" },
 ];
 
+function getInitialPendingUsers(): typeof initialPendingUsers {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return initialPendingUsers;
+        const parsed = JSON.parse(stored);
+        if (!Array.isArray(parsed)) return initialPendingUsers;
+        return parsed;
+    } catch {
+        return initialPendingUsers;
+    }
+}
+
 const AdminDashboard = () => {
-    const [pendingUsers, setPendingUsers] = useState(initialPendingUsers);
+    const [pendingUsers, setPendingUsers] = useState(getInitialPendingUsers);
     const [message, setMessage] = useState<string | null>(null);
     const [roleByUserId, setRoleByUserId] = useState<Record<string, string>>({
         "1": "Profesor",
         "2": "Student",
     });
+
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pendingUsers));
+    }, [pendingUsers]);
 
     const handleSetRole = (user: { id: string; name: string }) => {
         const selectedRole = roleByUserId[user.id] ?? "Profesor";
