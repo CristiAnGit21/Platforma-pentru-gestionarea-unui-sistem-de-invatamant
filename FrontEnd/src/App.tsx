@@ -17,7 +17,7 @@ function App() {
             {isAuth ? (
                 <div className="flex">
                     <NavBar selectedPage={selectedPage} setSelectedPage={setSelectedPage} />
-                    <main className="flex-1 ml-24 min-h-screen bg-gray-50 overflow-x-hidden">
+                    <main className="flex-1 ml-24 min-h-screen bg-gray-50 overflow-x-hidden overflow-y-auto">
                         <AppRoutes />
                     </main>
                 </div>
