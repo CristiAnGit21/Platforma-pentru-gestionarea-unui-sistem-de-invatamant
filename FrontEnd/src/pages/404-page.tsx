@@ -1,39 +1,16 @@
-﻿import errorImage from '../assets/403.png';
-
 const PageNotFound = () => {
     return (
-        <div id="wrapper" style={styles.wrapper}>
-            <img
-                src={errorImage}
-                alt="Page not found"
-                style={styles.image}
-            />
-            <div id="info">
-                <h3 style={styles.text}>This page could not be found</h3>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+            <div className="text-center">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">
+                    Pagina este în construcție
+                </h1>
+                <p className="mt-3 text-gray-500">
+                    Te rugăm să revii mai târziu. Lucrăm la conținutul acestei pagini.
+                </p>
             </div>
         </div>
     );
-};
-
-const styles = {
-    wrapper: {
-        display: 'flex',
-        flexDirection: 'column' as const,
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        textAlign: 'center' as const,
-        padding: '20px'
-    },
-    image: {
-        maxWidth: '100%',
-        height: 'auto',
-        marginBottom: '20px'
-    },
-    text: {
-        fontSize: '1.5rem',
-        color: '#333'
-    }
 };
 
 export default PageNotFound;

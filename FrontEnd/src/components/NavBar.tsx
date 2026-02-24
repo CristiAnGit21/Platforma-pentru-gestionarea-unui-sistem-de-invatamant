@@ -1,20 +1,44 @@
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '@/assets/logo.png';
-import {
-    IdCard,
-    User,
-    Home,
-    BookOpen,
-    Calendar,
-    Phone,
-    Receipt,
-    Bell,
-    LogOut,
-    Menu,
-    MessageCircleWarning
+import { IdCard,
+User,
+  Home,
+  BookOpen,
+  Calendar,
+  Receipt,
+  Bell,
+  LogOut,
+  Menu,
+  MessageCircleWarning
 } from 'lucide-react';
-import { clearAuthSession } from "../auth/storage";
+import { clearAuthSession, getAuthSession } from "../auth/storage";
+
+type NavItem = { page: string; path: string; icon: ReactElement };
+
+const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "ELEV", NavItem[]> = {
+  ADMIN: [
+    { page: "Dashboard", path: "/admin/dashboard", icon: <Home size={27} /> },
+    { page: "Orar", path: "/admin/orar", icon: <Calendar size={27} /> },
+    { page: "Studenți", path: "/admin/studenti", icon: <IdCard size={27} /> },
+    { page: "Profesori", path: "/admin/profesori", icon: <User size={27} /> },
+  ],
+  PROFESOR: [
+    { page: "Dashboard", path: "/profesor/dashboard", icon: <Home size={27} /> },
+    { page: "Catalog", path: "/profesor/catalog", icon: <BookOpen size={27} /> },
+    { page: "Notificări", path: "/profesor/notificari", icon: <Bell size={27} /> },
+    { page: "Studenți", path: "/profesor/studenti", icon: <IdCard size={27} /> },
+    { page: "Raportează o problemă", path: "/profesor/raporteaza", icon: <MessageCircleWarning size={27} /> },
+  ],
+  ELEV: [
+    { page: "Dashboard", path: "/elev/dashboard", icon: <Home size={27} /> },
+    { page: "Catalog", path: "/elev/catalog", icon: <BookOpen size={27} /> },
+    { page: "Orar", path: "/elev/orar", icon: <Calendar size={27} /> },
+    { page: "Situația financiară", path: "/elev/situatia-financiara", icon: <Receipt size={27} /> },
+    { page: "Notificări", path: "/elev/notificari", icon: <Bell size={27} /> },
+    { page: "Raportează o problemă", path: "/elev/raporteaza", icon: <MessageCircleWarning size={27} /> },
+  ],
+};
 
 type Props = {
     selectedPage: string;
@@ -22,7 +46,8 @@ type Props = {
 }
 
 const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const role = getAuthSession()?.user.role;
 
     return (
         <>
@@ -67,22 +92,20 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
                         </button>
                     </div>
 
-                    {/* Links */}
-                    <div
-                        className={`flex flex-col gap-4 flex-1 items-center ${
-                            isExpanded ? 'overflow-y-auto pr-1' : 'overflow-hidden'
-                        }`}
-                    >
-                        <LinkWithIcon icon={<Home size={27} />} page="Acasă" path="/" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<BookOpen size={27} />} page="Catalog" path="/students" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<Calendar size={27} />} page="Orar" path="/orar" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<Receipt size={27} />} page="Situația financiară" path="/situatia-financiara" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<Bell size={27} />} page="Notificări" path="/notificari" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<IdCard size={27} />} page="Studenți" path="/studenti" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<User size={27} />} page="Profesori" path="/profesori" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<MessageCircleWarning size={27} />} page="Raportează o problemă" path="/raporteaza-o-problema" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                        <LinkWithIcon icon={<Phone size={27} />} page="Contacte" path="/contacte" selectedPage={selectedPage} setSelectedPage={setSelectedPage} isExpanded={isExpanded} />
-                    </div>
+          {/* Links */}
+          <div className="flex flex-col gap-4 flex-1 items-center">
+            {navItemsByRole[role ?? "ELEV"].map((item) => (
+              <LinkWithIcon
+                key={`${item.page}:${item.path}`}
+                icon={item.icon}
+                page={item.page}
+                path={item.path}
+                selectedPage={selectedPage}
+                setSelectedPage={setSelectedPage}
+                isExpanded={isExpanded}
+              />
+            ))}
+          </div>
 
                     {/* Logout */}
                     <div className="mt-auto pt-4 border-t w-full flex justify-center">
