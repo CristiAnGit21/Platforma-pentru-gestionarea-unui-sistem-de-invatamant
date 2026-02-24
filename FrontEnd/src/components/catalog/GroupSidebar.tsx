@@ -31,9 +31,8 @@ const GroupSidebar = ({ groups, selectedGroupId, onSelectGroup }: GroupSidebarPr
                         const isSelected = g.id === selectedGroupId;
                         return (
                             <button key={g.id} onClick={() => onSelectGroup(g.id)}
-                                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
-                                    isSelected ? 'bg-purple-50 border border-purple-200' : 'hover:bg-gray-50 border border-transparent'
-                                }`}
+                                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${isSelected ? 'bg-purple-50 border border-purple-200' : 'hover:bg-gray-50 border border-transparent'
+                                    }`}
                             >
                                 <div className={`p-2 rounded-lg ${isSelected ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-400'}`}>
                                     <Users size={16} />
