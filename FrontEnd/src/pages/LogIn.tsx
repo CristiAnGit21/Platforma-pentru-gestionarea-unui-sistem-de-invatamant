@@ -41,24 +41,24 @@ const LogIn = () => {
                 <div className="w-full md:w-2/5 flex items-center justify-center p-6 bg-[#f9f9ff]">
                     <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-8 w-full max-w-sm border border-gray-100">
                         <div className="mb-10 text-left">
-                            <h2 className="text-4xl font-extrabold text-gray-800 mb-2">Login</h2>
+                            <h2 className="text-4xl font-extrabold text-gray-800 mb-2">Autentificare</h2>
                             <p className="text-gray-500 text-sm">
-                                Don't have an account?
+                                Nu ai cont?
                                 <span
                                     onClick={() => navigate("/signup")}
                                     className="text-purple-600 font-semibold cursor-pointer ml-1 hover:underline"
                                 >
-                                    Sign Up
+                                    Înregistrează-te
                                 </span>
                             </p>
                         </div>
 
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-gray-700 font-semibold text-sm mb-2">Email Address</label>
+                                <label className="block text-gray-700 font-semibold text-sm mb-2">Adresă de email</label>
                                 <input
                                     type="email"
-                                    placeholder="you@example.com"
+                                    placeholder="tu@exemplu.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all placeholder:text-gray-300"
@@ -67,14 +67,14 @@ const LogIn = () => {
 
                             <div>
                                 <div className="flex justify-between items-center mb-2">
-                                    <label className="text-gray-700 font-semibold text-sm">Password</label>
+                                    <label className="text-gray-700 font-semibold text-sm">Parolă</label>
                                     <span className="text-purple-600 text-xs font-semibold cursor-pointer hover:underline">
-                                        Forgot Password?
+                                        Ai uitat parola?
                                     </span>
                                 </div>
                                 <input
                                     type="password"
-                                    placeholder="Enter 6 characters or more"
+                                    placeholder="Introdu minim 6 caractere"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all placeholder:text-gray-300"
@@ -88,7 +88,7 @@ const LogIn = () => {
                                 disabled={isLoading}
                                 className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
                             >
-                                {isLoading ? "Loading..." : "Login"}
+                                {isLoading ? "Se încarcă..." : "Autentificare"}
                             </button>
                         </div>
                     </div>
@@ -98,7 +98,7 @@ const LogIn = () => {
 
                     <img
                         src={loginImg}
-                        alt="Login illustration"
+                        alt="Ilustrație autentificare"
                         className="w-full h-auto max-w-[90%] object-contain z-10"
                     />
                 </div>

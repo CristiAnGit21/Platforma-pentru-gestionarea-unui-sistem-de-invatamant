@@ -4,6 +4,7 @@ import { devGet, devRemove, devSet } from "../../utils/devStorage";
 const STORAGE_KEY = "utm_pending_users_v1";
 const STUDENTS_KEY = "utm_students_v1";
 const PROFESSORS_KEY = "utm_professors_v1";
+const GROUPS_KEY = "utm_groups_v1";
 
 type PendingUser = { id: string; name: string; email: string };
 
@@ -21,7 +22,16 @@ function getInitialPendingUsers(): PendingUser[] {
     return Array.isArray(stored) ? stored : initialPendingUsers;
 }
 
-type Group = { id: string; name: string; year: number; specialization: string };
+type Group = {
+    id: string;
+    name: string;
+    year: number;
+    specialization: string;
+    professorId?: string;
+    studentIds: string[];
+};
+
+type Professor = { id: string; name: string; status: string; email: string };
 
 const AdminDashboard = () => {
     const [pendingUsers, setPendingUsers] = useState<PendingUser[]>(() =>
@@ -29,19 +39,47 @@ const AdminDashboard = () => {
     );
     const [message, setMessage] = useState<string | null>(null);
 
-    // Grupe state
-    const [groups, setGroups] = useState<Group[]>([]);
+    // Grupe state - initialized from storage
+    const [groups, setGroups] = useState<Group[]>(() => devGet<Group[]>(GROUPS_KEY, []));
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-    const [groupForm, setGroupForm] = useState({ name: "", year: 1, specialization: "" });
+    const [groupForm, setGroupForm] = useState({ name: "", year: 1, specialization: "", professorId: "" });
+
+    // Active professors and students for assignment
+    const [activeProfessors, setActiveProfessors] = useState<Professor[]>([]);
+    const [allActiveStudents, setAllActiveStudents] = useState<any[]>([]);
+
+    // Student assignment modal state
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+    const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
     const [roleByUserId, setRoleByUserId] = useState<Record<string, Role>>({
         "1": "Profesor",
         "2": "Student",
     });
 
+    // Auto-persist pending users
     useEffect(() => {
         devSet(STORAGE_KEY, pendingUsers);
     }, [pendingUsers]);
+
+    // Auto-persist groups
+    useEffect(() => {
+        devSet(GROUPS_KEY, groups);
+    }, [groups]);
+
+    // Load active professors and students
+    useEffect(() => {
+        const rawProfs = devGet<any[]>(PROFESSORS_KEY, []);
+        if (Array.isArray(rawProfs)) {
+            setActiveProfessors(rawProfs.filter(p => p.status === "ACTIVE"));
+        }
+
+        const rawStudents = devGet<any[]>(STUDENTS_KEY, []);
+        if (Array.isArray(rawStudents)) {
+            setAllActiveStudents(rawStudents.filter(s => s.status === "ACTIVE"));
+        }
+    }, [isGroupModalOpen, isAssignModalOpen]);
 
     const pushToList = (key: string, user: AssignedUser) => {
         const existing = devGet<AssignedUser[]>(key, []);
@@ -79,6 +117,7 @@ const AdminDashboard = () => {
         devRemove(STORAGE_KEY);
         devRemove(STUDENTS_KEY);
         devRemove(PROFESSORS_KEY);
+        devRemove(GROUPS_KEY);
 
         setPendingUsers(initialPendingUsers);
         setRoleByUserId({
@@ -97,13 +136,46 @@ const AdminDashboard = () => {
             name: groupForm.name,
             year: groupForm.year,
             specialization: groupForm.specialization,
+            professorId: groupForm.professorId || undefined,
+            studentIds: [],
         };
 
         setGroups((prev) => [...prev, newGroup]);
         setIsGroupModalOpen(false);
-        setGroupForm({ name: "", year: 1, specialization: "" });
+        setGroupForm({ name: "", year: 1, specialization: "", professorId: "" });
         setMessage(`Grupa "${newGroup.name}" a fost creată cu succes.`);
         window.setTimeout(() => setMessage(null), 3000);
+    };
+
+    const handleOpenAssignModal = (group: Group) => {
+        setEditingGroup(group);
+        setSelectedStudentIds(group.studentIds || []);
+        setIsAssignModalOpen(true);
+    };
+
+    const handleSaveAssignment = () => {
+        if (!editingGroup) return;
+
+        setGroups((prev) =>
+            prev.map((g) =>
+                g.id === editingGroup.id
+                    ? { ...g, studentIds: selectedStudentIds }
+                    : g
+            )
+        );
+        setIsAssignModalOpen(false);
+        setEditingGroup(null);
+        setSelectedStudentIds([]);
+        setMessage(`Studenții au fost asignați grupei "${editingGroup.name}".`);
+        window.setTimeout(() => setMessage(null), 3000);
+    };
+
+    const toggleStudentSelection = (studentId: string) => {
+        setSelectedStudentIds((prev) =>
+            prev.includes(studentId)
+                ? prev.filter((id) => id !== studentId)
+                : [...prev, studentId]
+        );
     };
 
     return (
@@ -211,16 +283,41 @@ const AdminDashboard = () => {
                                         <th className="pb-3 font-semibold text-gray-700">Nume grupă</th>
                                         <th className="pb-3 font-semibold text-gray-700">An</th>
                                         <th className="pb-3 font-semibold text-gray-700">Specialitate</th>
+                                        <th className="pb-3 font-semibold text-gray-700">Profesor</th>
+                                        <th className="pb-3 font-semibold text-gray-700 text-right">Acțiuni</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {groups.map((g) => (
-                                        <tr key={g.id} className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors">
-                                            <td className="py-4 font-medium text-gray-800">{g.name}</td>
-                                            <td className="py-4 text-gray-600">Anul {g.year}</td>
-                                            <td className="py-4 text-gray-600">{g.specialization}</td>
-                                        </tr>
-                                    ))}
+                                    {groups.map((g) => {
+                                        const prof = activeProfessors.find(p => p.id === g.professorId);
+                                        return (
+                                            <tr key={g.id} className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors">
+                                                <td className="py-4 font-medium text-gray-800">{g.name}</td>
+                                                <td className="py-4 text-gray-600">Anul {g.year}</td>
+                                                <td className="py-4 text-gray-600">{g.specialization}</td>
+                                                <td className="py-4 text-gray-600">
+                                                    {prof ? (
+                                                        <span className="flex items-center gap-2 text-violet-700">
+                                                            <span className="w-2 h-2 rounded-full bg-violet-500"></span>
+                                                            {prof.name}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400 italic">Neatribuit</span>
+                                                    )}
+                                                </td>
+                                                <td className="py-4 text-right">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenAssignModal(g)}
+                                                        className="text-sm font-semibold text-violet-600 hover:text-violet-800 flex items-center gap-1 ml-auto"
+                                                    >
+                                                        <span>Adaugă studenți</span>
+                                                        <span className="text-gray-400 font-normal">({g.studentIds?.length || 0})</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -273,6 +370,22 @@ const AdminDashboard = () => {
                                     />
                                 </div>
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Profesor (Opcional)</label>
+                                <select
+                                    value={groupForm.professorId}
+                                    onChange={(e) => setGroupForm({ ...groupForm, professorId: e.target.value })}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none bg-white transition-all"
+                                >
+                                    <option value="">-- Selectează profesor --</option>
+                                    {activeProfessors.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.name} ({p.email})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <div className="p-6 bg-gray-50 flex gap-3">
@@ -290,6 +403,66 @@ const AdminDashboard = () => {
                                 className="flex-1 px-4 py-2.5 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition-all shadow-md shadow-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Creează
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal pentru Asignare Studenți */}
+            {isAssignModalOpen && editingGroup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-800">Asignează studenți — {editingGroup.name}</h3>
+                                <p className="text-gray-500 text-sm mt-1">Selectează studenții activi pentru această grupă.</p>
+                            </div>
+                        </div>
+
+                        <div className="p-6 max-h-96 overflow-y-auto">
+                            {allActiveStudents.length === 0 ? (
+                                <p className="text-center py-4 text-gray-400">Nu există studenți activi confirmați.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {allActiveStudents.map((student) => (
+                                        <label
+                                            key={student.id}
+                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${selectedStudentIds.includes(student.id)
+                                                ? "bg-violet-50 border-violet-200"
+                                                : "border-gray-100 hover:bg-gray-50"
+                                                }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedStudentIds.includes(student.id)}
+                                                onChange={() => toggleStudentSelection(student.id)}
+                                                className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold text-gray-800">{student.name}</p>
+                                                <p className="text-xs text-gray-500 truncate">{student.email}</p>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-6 bg-gray-50 flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setIsAssignModalOpen(false)}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-white transition-all"
+                            >
+                                Anulează
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSaveAssignment}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition-all shadow-md shadow-violet-200"
+                            >
+                                Salvează ({selectedStudentIds.length})
                             </button>
                         </div>
                     </div>
