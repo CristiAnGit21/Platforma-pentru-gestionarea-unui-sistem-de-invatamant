@@ -88,6 +88,10 @@ export default function Students() {
   //         → Effect(persist) fires immediately with students=[] → overwrites storage
   // Instead, every mutation explicitly calls saveStudents() inside the updater.
 
+  const selectedGroupId = devGet<string>("utm_selected_group_v1", "");
+  const groups = devGet<any[]>("utm_groups_v1", []);
+  const selectedGroup = groups.find(g => g.id === selectedGroupId);
+
   const unconfirmed = useMemo(
     () => students.filter((s) => s.status === "UNCONFIRMED"),
     [students]
@@ -97,10 +101,10 @@ export default function Students() {
     [students]
   );
 
-  // Professors/Students only see active list; Admin sees based on tab
+  // Professors only see students from the selected group; Admin sees based on tab
   const currentList = isAdmin
     ? (activeTab === "Neconfirmați" ? unconfirmed : active)
-    : active;
+    : active.filter(s => selectedGroup?.studentIds?.includes(s.id));
 
   const q = query.trim().toLowerCase();
   const filtered =
@@ -139,7 +143,9 @@ export default function Students() {
 
   const emptyListMessage = isAdmin
     ? (activeTab === "Neconfirmați" ? "Nu există studenți neconfirmați." : "Nu există studenți activi.")
-    : "Nu există studenți activi.";
+    : !selectedGroupId
+      ? "Selectați o grupă din Catalog pentru a vedea studenții."
+      : "Nu există studenți în această grupă.";
 
   return (
     <div className="p-6">
