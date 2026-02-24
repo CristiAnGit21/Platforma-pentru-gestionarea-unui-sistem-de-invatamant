@@ -5,13 +5,25 @@ import { MOCK_GROUPS } from '../../components/catalog/catalogTypes';
 import GroupSidebar from '../../components/catalog/GroupSidebar';
 import GradesTab from '../../components/catalog/GradesTab';
 import AttendanceTab from '../../components/catalog/AttendanceTab';
+import { devGet, devSet } from '../../utils/devStorage';
 
 type TabView = 'note' | 'prezenta';
 
+const SELECTED_GROUP_KEY = "utm_selected_group_v1";
+
 const CatalogPage = () => {
     const [groups, setGroups] = useState<Group[]>(MOCK_GROUPS);
-    const [selectedGroupId, setSelectedGroupId] = useState(MOCK_GROUPS[0].id);
+    const [selectedGroupId, setSelectedGroupId] = useState<string>(() => {
+        const saved = devGet<string>(SELECTED_GROUP_KEY, "");
+        if (saved && MOCK_GROUPS.some(g => g.id === saved)) return saved;
+        return MOCK_GROUPS[0].id;
+    });
     const [activeTab, setActiveTab] = useState<TabView>('note');
+
+    const handleSelectGroup = (id: string) => {
+        setSelectedGroupId(id);
+        devSet(SELECTED_GROUP_KEY, id);
+    };
 
     const selectedGroup = groups.find(g => g.id === selectedGroupId);
 
@@ -76,7 +88,7 @@ const CatalogPage = () => {
                     <GroupSidebar
                         groups={groups}
                         selectedGroupId={selectedGroupId}
-                        onSelectGroup={setSelectedGroupId}
+                        onSelectGroup={handleSelectGroup}
                     />
                 </div>
 
@@ -87,16 +99,14 @@ const CatalogPage = () => {
                         <div className="flex items-center justify-between p-4 border-b border-gray-100">
                             <div className="flex items-center gap-1 bg-gray-50 rounded-xl p-1">
                                 <button onClick={() => setActiveTab('note')}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                                        activeTab === 'note' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
-                                    }`}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'note' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                                        }`}
                                 >
                                     <GraduationCap size={14} /> Catalog Note
                                 </button>
                                 <button onClick={() => setActiveTab('prezenta')}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                                        activeTab === 'prezenta' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
-                                    }`}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'prezenta' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                                        }`}
                                 >
                                     <ClipboardCheck size={14} /> Prezență
                                 </button>

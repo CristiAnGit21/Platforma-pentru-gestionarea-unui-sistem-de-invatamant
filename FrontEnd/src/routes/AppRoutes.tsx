@@ -8,7 +8,7 @@ import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ProfesorDashboard from "../pages/dashboard/ProfesorDashboard";
 import ElevDashboard from "../pages/dashboard/ElevDashboard";
 import CatalogPage from "../pages/placeholders/CatalogPage";
-import ProfesoriPage from "../pages/placeholders/ProfesoriPage";
+import Professors from "../pages/Professors";
 import ReportPage from "../pages/ReportPage";
 import RoleGuard from "./RoleGuard";
 import { getAuthSession } from "../auth/storage";
@@ -70,7 +70,7 @@ function AppRoutes() {
                 path="/elev/situatia-financiara"
                 element={
                     <RoleGuard allowedRoles={["ELEV"]}>
-                        <FinancialStatus/>
+                        <FinancialStatus />
                     </RoleGuard>
                 }
             />
@@ -86,7 +86,7 @@ function AppRoutes() {
                 path="/admin/profesori"
                 element={
                     <RoleGuard allowedRoles={["ADMIN"]}>
-                        <ProfesoriPage />
+                        <Professors />
                     </RoleGuard>
                 }
             />
