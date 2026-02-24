@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { devGet, devSet } from "../utils/devStorage";
+import { getAuthSession } from "../auth/storage";
 
 const STUDENTS_KEY = "utm_students_v1";
 
@@ -57,6 +58,10 @@ export default function Students() {
   );
   const [query, setQuery] = useState("");
 
+  const session = getAuthSession();
+  const role = session?.user.role;
+  const isAdmin = role === "ADMIN";
+
   // IMPORTANT: funcție de sync pe care o putem apela oricând
   // NOTE: We do NOT write back after reading — that was the original bug.
   //       Writing is done explicitly only in mutation handlers below.
@@ -92,7 +97,10 @@ export default function Students() {
     [students]
   );
 
-  const currentList = activeTab === "Neconfirmați" ? unconfirmed : active;
+  // Professors/Students only see active list; Admin sees based on tab
+  const currentList = isAdmin
+    ? (activeTab === "Neconfirmați" ? unconfirmed : active)
+    : active;
 
   const q = query.trim().toLowerCase();
   const filtered =
@@ -129,10 +137,9 @@ export default function Students() {
     });
   };
 
-  const emptyListMessage =
-    activeTab === "Neconfirmați"
-      ? "Nu există studenți neconfirmați."
-      : "Nu există studenți activi.";
+  const emptyListMessage = isAdmin
+    ? (activeTab === "Neconfirmați" ? "Nu există studenți neconfirmați." : "Nu există studenți activi.")
+    : "Nu există studenți activi.";
 
   return (
     <div className="p-6">
@@ -142,34 +149,36 @@ export default function Students() {
             Studenți
           </h1>
           <p className="text-gray-500 mt-2">
-            Gestionare studenți și conturi (front-only)
+            {isAdmin ? "Gestionare studenți și conturi (front-only)" : "Listă studenți activi"}
           </p>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
           <div className="flex flex-col gap-4 mb-4">
-            <div className="flex gap-2 border-b border-gray-100">
-              <button
-                type="button"
-                onClick={() => setActiveTab("Neconfirmați")}
-                className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${activeTab === "Neconfirmați"
+            {isAdmin && (
+              <div className="flex gap-2 border-b border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("Neconfirmați")}
+                  className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${activeTab === "Neconfirmați"
                     ? "bg-violet-100 text-violet-700 border-b-2 border-violet-600 -mb-px"
                     : "text-gray-600 hover:bg-gray-50"
-                  }`}
-              >
-                Neconfirmați
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("Activi")}
-                className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${activeTab === "Activi"
+                    }`}
+                >
+                  Neconfirmați
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("Activi")}
+                  className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${activeTab === "Activi"
                     ? "bg-violet-100 text-violet-700 border-b-2 border-violet-600 -mb-px"
                     : "text-gray-600 hover:bg-gray-50"
-                  }`}
-              >
-                Activi
-              </button>
-            </div>
+                    }`}
+                >
+                  Activi
+                </button>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <input
@@ -180,19 +189,23 @@ export default function Students() {
                 className="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none placeholder:text-gray-400"
               />
 
-              <button
-                type="button"
-                onClick={syncFromStorage}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50"
-              >
-                Reîncarcă din storage
-              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={syncFromStorage}
+                  className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50"
+                >
+                  Reîncarcă din storage
+                </button>
+              )}
             </div>
 
-            <div className="text-xs text-gray-400">
-              Total: {students.length} | Neconfirmați: {unconfirmed.length} |
-              Activi: {active.length}
-            </div>
+            {isAdmin && (
+              <div className="text-xs text-gray-400">
+                Total: {students.length} | Neconfirmați: {unconfirmed.length} |
+                Activi: {active.length}
+              </div>
+            )}
           </div>
 
           {currentList.length === 0 ? (
@@ -212,10 +225,12 @@ export default function Students() {
                     <th className="pb-3 pr-4 font-semibold text-gray-800">
                       Email
                     </th>
-                    <th className="pb-3 pr-4 font-semibold text-gray-800">
-                      Status
-                    </th>
-                    <th className="pb-3 font-semibold text-gray-800">Acțiuni</th>
+                    {isAdmin && (
+                      <th className="pb-3 pr-4 font-semibold text-gray-800">
+                        Status
+                      </th>
+                    )}
+                    {isAdmin && <th className="pb-3 font-semibold text-gray-800">Acțiuni</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -228,35 +243,37 @@ export default function Students() {
                         {s.name}
                       </td>
                       <td className="py-3 pr-4 text-gray-600">{s.email}</td>
-                      <td className="py-3 pr-4 text-gray-600">{s.status}</td>
-                      <td className="py-3 flex flex-wrap gap-2">
-                        {activeTab === "Neconfirmați" ? (
-                          <>
+                      {isAdmin && <td className="py-3 pr-4 text-gray-600">{s.status}</td>}
+                      {isAdmin && (
+                        <td className="py-3 flex flex-wrap gap-2">
+                          {activeTab === "Neconfirmați" ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleConfirm(s.id)}
+                                className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700"
+                              >
+                                Confirmă
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleReject(s.id)}
+                                className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                              >
+                                Respinge
+                              </button>
+                            </>
+                          ) : (
                             <button
                               type="button"
-                              onClick={() => handleConfirm(s.id)}
-                              className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700"
-                            >
-                              Confirmă
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleReject(s.id)}
+                              onClick={() => handleDeactivate(s.id)}
                               className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
                             >
-                              Respinge
+                              Dezactivează
                             </button>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleDeactivate(s.id)}
-                            className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
-                          >
-                            Dezactivează
-                          </button>
-                        )}
-                      </td>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
