@@ -11,13 +11,13 @@ type RoleGuardProps = {
 const dashboardByRole: Record<Role, string> = {
     ADMIN: "/admin/dashboard",
     PROFESOR: "/profesor/dashboard",
-    ELEV: "/elev/dashboard",
+    STUDENT: "/student/dashboard",
 };
 
 const prefixByRole: Record<Role, string> = {
     ADMIN: "/admin",
     PROFESOR: "/profesor",
-    ELEV: "/elev",
+    STUDENT: "/student",
 };
 
 const RoleGuard = ({ allowedRoles, children }: RoleGuardProps) => {
