@@ -16,7 +16,7 @@ import { clearAuthSession, getAuthSession } from "../auth/storage";
 
 type NavItem = { page: string; path: string; icon: ReactElement };
 
-const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "STUDENT", NavItem[]> = {
+const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "ELEV", NavItem[]> = {
   ADMIN: [
     { page: "Dashboard", path: "/admin/dashboard", icon: <Home size={27} /> },
     { page: "Orar", path: "/admin/orar", icon: <Calendar size={27} /> },
@@ -30,13 +30,13 @@ const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "STUDENT", NavItem[]> = {
     { page: "Studenți", path: "/profesor/studenti", icon: <IdCard size={27} /> },
     { page: "Raportează o problemă", path: "/profesor/raporteaza", icon: <MessageCircleWarning size={27} /> },
   ],
-  STUDENT: [
-    { page: "Dashboard", path: "/student/dashboard", icon: <Home size={27} /> },
-    { page: "Catalog", path: "/student/catalog", icon: <BookOpen size={27} /> },
-    { page: "Orar", path: "/student/orar", icon: <Calendar size={27} /> },
-    { page: "Situația financiară", path: "/student/situatia-financiara", icon: <Receipt size={27} /> },
-    { page: "Notificări", path: "/student/notificari", icon: <Bell size={27} /> },
-    { page: "Raportează o problemă", path: "/student/raporteaza", icon: <MessageCircleWarning size={27} /> },
+  ELEV: [
+    { page: "Dashboard", path: "/elev/dashboard", icon: <Home size={27} /> },
+    { page: "Catalog", path: "/elev/catalog", icon: <BookOpen size={27} /> },
+    { page: "Orar", path: "/elev/orar", icon: <Calendar size={27} /> },
+    { page: "Situația financiară", path: "/elev/situatia-financiara", icon: <Receipt size={27} /> },
+    { page: "Notificări", path: "/elev/notificari", icon: <Bell size={27} /> },
+    { page: "Raportează o problemă", path: "/elev/raporteaza", icon: <MessageCircleWarning size={27} /> },
   ],
 };
 
@@ -52,7 +52,7 @@ const NavBar = ({ setSelectedPage }: Props) => {
 
   // Derive selected page from current URL path
   const currentPath = location.pathname;
-  const items = navItemsByRole[role ?? 'STUDENT'];
+  const items = navItemsByRole[role ?? 'ELEV'];
   const matchedItem = items.find(item => currentPath === item.path || currentPath.startsWith(item.path + '/'));
   const selectedPage = matchedItem?.page ?? '';
 
@@ -101,7 +101,7 @@ const NavBar = ({ setSelectedPage }: Props) => {
 
           {/* Links */}
           <div className="flex flex-col gap-4 flex-1 items-center">
-            {navItemsByRole[role ?? "STUDENT"].map((item) => (
+            {navItemsByRole[role ?? "ELEV"].map((item) => (
               <LinkWithIcon
                 key={`${item.page}:${item.path}`}
                 icon={item.icon}
