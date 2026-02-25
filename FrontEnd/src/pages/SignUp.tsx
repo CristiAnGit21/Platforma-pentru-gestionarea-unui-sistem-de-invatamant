@@ -18,17 +18,17 @@ const SignUp = () => {
         setError("");
 
         if (!fullName || !email || !password || !confirmPassword) {
-            setError("Please fill in all fields.");
+            setError("Te rugăm să completezi toate câmpurile.");
             return;
         }
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match!");
+            setError("Parolele nu se potrivesc!");
             return;
         }
 
         if (password.length < 6) {
-            setError("Password must be at least 6 characters.");
+            setError("Parola trebuie să aibă cel puțin 6 caractere.");
             return;
         }
 
@@ -51,24 +51,24 @@ const SignUp = () => {
                     <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-8 w-full max-sm border border-gray-100">
 
                         <div className="mb-6 text-left">
-                            <h2 className="text-4xl font-extrabold text-gray-800 mb-2">Sign Up</h2>
+                            <h2 className="text-4xl font-extrabold text-gray-800 mb-2">Înregistrare</h2>
                             <p className="text-gray-500 text-sm">
-                                I'm already a member.
+                                Sunt deja membru.
                                 <span
                                     onClick={() => navigate("/login")}
                                     className="text-purple-600 font-semibold cursor-pointer ml-1 hover:underline"
                                 >
-                                    Login
+                                    Autentificare
                                 </span>
                             </p>
                         </div>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-gray-700 font-semibold text-sm mb-1">Full Name</label>
+                                <label className="block text-gray-700 font-semibold text-sm mb-1">Nume complet</label>
                                 <input
                                     type="text"
-                                    placeholder="Enter your full name"
+                                    placeholder="Introdu numele complet"
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all placeholder:text-gray-300 text-sm"
@@ -76,10 +76,10 @@ const SignUp = () => {
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold text-sm mb-1">Email Address</label>
+                                <label className="block text-gray-700 font-semibold text-sm mb-1">Adresă de email</label>
                                 <input
                                     type="email"
-                                    placeholder="you@example.com"
+                                    placeholder="tu@exemplu.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all placeholder:text-gray-300 text-sm"
@@ -87,7 +87,7 @@ const SignUp = () => {
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold text-sm mb-1">Password</label>
+                                <label className="block text-gray-700 font-semibold text-sm mb-1">Parolă</label>
                                 <div className="relative">
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -101,13 +101,13 @@ const SignUp = () => {
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors text-[10px] font-bold"
                                     >
-                                        {showPassword ? "HIDE" : "SHOW"}
+                                        {showPassword ? "ASCUNDE" : "ARATĂ"}
                                     </button>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold text-sm mb-1">Repeat Password</label>
+                                <label className="block text-gray-700 font-semibold text-sm mb-1">Repetă parola</label>
                                 <input
                                     type="password"
                                     placeholder="••••••••"
@@ -137,12 +137,12 @@ const SignUp = () => {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        Creating account...
+                                        Se creează contul...
                                     </span>
                                 ) : isSuccess ? (
-                                    "Account Created! ✓"
+                                    "Cont creat! ✓"
                                 ) : (
-                                    "Sign Up"
+                                    "Înregistrare"
                                 )}
                             </button>
                         </div>

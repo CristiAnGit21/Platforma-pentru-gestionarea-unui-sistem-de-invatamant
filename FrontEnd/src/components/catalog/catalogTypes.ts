@@ -44,8 +44,8 @@ export const getAttendancePercent = (records: AttendanceRecord[]): number | null
 };
 
 export const STATUS_CFG: Record<StudentStatus, { label: string; bg: string; text: string; dot: string }> = {
-    ACTIVE:      { label: 'Activ',       bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500' },
-    UNCONFIRMED: { label: 'Neconfirmat', bg: 'bg-amber-50',  text: 'text-amber-700',  dot: 'bg-amber-500' },
+    ACTIVE: { label: 'Activ', bg: 'bg-green-50', text: 'text-green-700', dot: 'bg-green-500' },
+    UNCONFIRMED: { label: 'Neconfirmat', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
 };
 
 // ══════════════════  Mock Data  ══════════════════
