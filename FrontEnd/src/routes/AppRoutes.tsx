@@ -8,6 +8,7 @@ import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ProfesorDashboard from "../pages/dashboard/ProfesorDashboard";
 import ElevDashboard from "../pages/dashboard/ElevDashboard";
 import CatalogPage from "../pages/placeholders/CatalogPage";
+import ElevCatalogPage from "../pages/elev/ElevCatalogPage";
 import Professors from "../pages/Professors";
 import ReportPage from "../pages/ReportPage";
 import RoleGuard from "./RoleGuard";
@@ -107,14 +108,6 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/profesor/catalog"
-                element={
-                    <RoleGuard allowedRoles={["PROFESOR"]}>
-                        <CatalogPage />
-                    </RoleGuard>
-                }
-            />
-            <Route
                 path="/profesor/raporteaza"
                 element={
                     <RoleGuard allowedRoles={["PROFESOR"]}>
@@ -126,7 +119,7 @@ function AppRoutes() {
                 path="/elev/catalog"
                 element={
                     <RoleGuard allowedRoles={["ELEV"]}>
-                        <CatalogPage />
+                        <ElevCatalogPage />
                     </RoleGuard>
                 }
             />
