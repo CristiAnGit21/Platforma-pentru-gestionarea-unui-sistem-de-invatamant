@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Logo from '@/assets/logo.png';
 import { IdCard,
 User,
@@ -16,7 +16,7 @@ import { clearAuthSession, getAuthSession } from "../auth/storage";
 
 type NavItem = { page: string; path: string; icon: ReactElement };
 
-const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "ELEV", NavItem[]> = {
+const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "STUDENT", NavItem[]> = {
   ADMIN: [
     { page: "Dashboard", path: "/admin/dashboard", icon: <Home size={27} /> },
     { page: "Orar", path: "/admin/orar", icon: <Calendar size={27} /> },
@@ -30,24 +30,31 @@ const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "ELEV", NavItem[]> = {
     { page: "Studenți", path: "/profesor/studenti", icon: <IdCard size={27} /> },
     { page: "Raportează o problemă", path: "/profesor/raporteaza", icon: <MessageCircleWarning size={27} /> },
   ],
-  ELEV: [
-    { page: "Dashboard", path: "/elev/dashboard", icon: <Home size={27} /> },
-    { page: "Catalog", path: "/elev/catalog", icon: <BookOpen size={27} /> },
-    { page: "Orar", path: "/elev/orar", icon: <Calendar size={27} /> },
-    { page: "Situația financiară", path: "/elev/situatia-financiara", icon: <Receipt size={27} /> },
-    { page: "Notificări", path: "/elev/notificari", icon: <Bell size={27} /> },
-    { page: "Raportează o problemă", path: "/elev/raporteaza", icon: <MessageCircleWarning size={27} /> },
+  STUDENT: [
+    { page: "Dashboard", path: "/student/dashboard", icon: <Home size={27} /> },
+    { page: "Catalog", path: "/student/catalog", icon: <BookOpen size={27} /> },
+    { page: "Orar", path: "/student/orar", icon: <Calendar size={27} /> },
+    { page: "Situația financiară", path: "/student/situatia-financiara", icon: <Receipt size={27} /> },
+    { page: "Notificări", path: "/student/notificari", icon: <Bell size={27} /> },
+    { page: "Raportează o problemă", path: "/student/raporteaza", icon: <MessageCircleWarning size={27} /> },
   ],
 };
 
 type Props = {
-    selectedPage: string;
-    setSelectedPage: (value: string) => void;
+    selectedPage?: string;
+    setSelectedPage?: (value: string) => void;
 }
 
-const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
+const NavBar = ({ setSelectedPage }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const role = getAuthSession()?.user.role;
+  const location = useLocation();
+
+  // Derive selected page from current URL path
+  const currentPath = location.pathname;
+  const items = navItemsByRole[role ?? 'STUDENT'];
+  const matchedItem = items.find(item => currentPath === item.path || currentPath.startsWith(item.path + '/'));
+  const selectedPage = matchedItem?.page ?? '';
 
     return (
         <>
@@ -94,7 +101,7 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
 
           {/* Links */}
           <div className="flex flex-col gap-4 flex-1 items-center">
-            {navItemsByRole[role ?? "ELEV"].map((item) => (
+            {navItemsByRole[role ?? "STUDENT"].map((item) => (
               <LinkWithIcon
                 key={`${item.page}:${item.path}`}
                 icon={item.icon}
@@ -116,7 +123,7 @@ const NavBar = ({ selectedPage, setSelectedPage }: Props) => {
                             onClick={() => {
                                 clearAuthSession();
                                 localStorage.removeItem("auth");
-                                setSelectedPage("Acasă");
+                                setSelectedPage?.("Acasă");
                                 window.location.href = "/login";
                             }}
                         >
@@ -156,7 +163,7 @@ const LinkWithIcon = ({
                         ? 'bg-violet-100 text-violet-700'
                         : 'hover:bg-gray-100 text-gray-600'
                 }`}
-                onClick={() => setSelectedPage(page)}
+                onClick={() => setSelectedPage?.(page)}
             >
                 <div className="flex items-center justify-center shrink-0">
                     {icon}

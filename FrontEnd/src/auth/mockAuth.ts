@@ -5,7 +5,7 @@ const MOCK_PASSWORD = "1234";
 const MOCK_USERS: User[] = [
     { id: "1", name: "Admin", email: "admin@test.com", role: "ADMIN" },
     { id: "2", name: "Profesor", email: "profesor@test.com", role: "PROFESOR" },
-    { id: "3", name: "Elev", email: "elev@test.com", role: "ELEV" },
+    { id: "3", name: "Student", email: "student@test.com", role: "STUDENT" },
 ];
 
 function delay(ms: number): Promise<void> {

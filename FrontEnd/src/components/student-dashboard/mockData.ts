@@ -1,6 +1,6 @@
-import type { ElevDashboardData } from "./types";
+import type { StudentDashboardData } from "./types";
 
-export const elevDashboardData: ElevDashboardData = {
+export const studentDashboardData: StudentDashboardData = {
     summary: {
         group: "TI-222",
         year: 2,
