@@ -6,26 +6,26 @@ import PageNotFound from '../pages/404-page';
 import FinancialStatus from "../pages/FinancialStatus.tsx";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ProfesorDashboard from "../pages/dashboard/ProfesorDashboard";
-import ElevDashboard from "../pages/dashboard/ElevDashboard";
+import StudentDashboard from "../pages/dashboard/StudentDashboard";
 import CatalogPage from "../pages/placeholders/CatalogPage";
-import ElevCatalogPage from "../pages/elev/ElevCatalogPage";
+import StudentCatalogPage from "../pages/student/StudentCatalogPage";
 import Professors from "../pages/Professors";
 import ReportPage from "../pages/ReportPage";
 import RoleGuard from "./RoleGuard";
 import { getAuthSession } from "../auth/storage";
 
-type RoleKey = "ADMIN" | "PROFESOR" | "ELEV";
+type RoleKey = "ADMIN" | "PROFESOR" | "STUDENT";
 
 const dashboardByRole: Record<RoleKey, string> = {
     ADMIN: "/admin/dashboard",
     PROFESOR: "/profesor/dashboard",
-    ELEV: "/elev/dashboard",
+    STUDENT: "/student/dashboard",
 };
 
 const prefixByRole: Record<RoleKey, string> = {
     ADMIN: "/admin",
     PROFESOR: "/profesor",
-    ELEV: "/elev",
+    STUDENT: "/student",
 };
 
 const RoleCatchAll = () => {
@@ -37,10 +37,10 @@ const RoleCatchAll = () => {
     }
 
     const role = session.user.role as RoleKey;
-    const allowedPrefix = prefixByRole[role] ?? "/elev";
+    const allowedPrefix = prefixByRole[role] ?? "/student";
 
     if (!location.pathname.startsWith(allowedPrefix)) {
-        const redirectTo = dashboardByRole[role] ?? "/elev/dashboard";
+        const redirectTo = dashboardByRole[role] ?? "/student/dashboard";
         return <Navigate to={redirectTo} replace />;
     }
 
@@ -68,9 +68,9 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/elev/situatia-financiara"
+                path="/student/situatia-financiara"
                 element={
-                    <RoleGuard allowedRoles={["ELEV"]}>
+                    <RoleGuard allowedRoles={["STUDENT"]}>
                         <FinancialStatus />
                     </RoleGuard>
                 }
@@ -116,25 +116,25 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/elev/catalog"
+                path="/student/catalog"
                 element={
-                    <RoleGuard allowedRoles={["ELEV"]}>
-                        <ElevCatalogPage />
+                    <RoleGuard allowedRoles={["STUDENT"]}>
+                        <StudentCatalogPage />
                     </RoleGuard>
                 }
             />
             <Route
-                path="/elev/orar"
+                path="/student/orar"
                 element={
-                    <RoleGuard allowedRoles={["ELEV"]}>
+                    <RoleGuard allowedRoles={["STUDENT"]}>
                         <Schedule />
                     </RoleGuard>
                 }
             />
             <Route
-                path="/elev/notificari"
+                path="/student/notificari"
                 element={
-                    <RoleGuard allowedRoles={["ELEV"]}>
+                    <RoleGuard allowedRoles={["STUDENT"]}>
                         <Notifications />
                     </RoleGuard>
                 }
@@ -156,17 +156,17 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/elev/dashboard"
+                path="/student/dashboard"
                 element={
-                    <RoleGuard allowedRoles={["ELEV"]}>
-                        <ElevDashboard />
+                    <RoleGuard allowedRoles={["STUDENT"]}>
+                        <StudentDashboard />
                     </RoleGuard>
                 }
             />
             <Route
-                path="/elev/raporteaza"
+                path="/student/raporteaza"
                 element={
-                    <RoleGuard allowedRoles={["ELEV"]}>
+                    <RoleGuard allowedRoles={["STUDENT"]}>
                         <ReportPage />
                     </RoleGuard>
                 }

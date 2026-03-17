@@ -1,19 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { getAuthSession } from "../../auth/storage";
-import AcademicSummaryCard from "../../components/elev-dashboard/AcademicSummaryCard";
-import DeadlinesCard from "../../components/elev-dashboard/DeadlinesCard";
-import { elevDashboardData } from "../../components/elev-dashboard/mockData";
-import NotificationsPreviewCard from "../../components/elev-dashboard/NotificationsPreviewCard";
-import RecentGradesCard from "../../components/elev-dashboard/RecentGradesCard";
-import StatsGrid from "../../components/elev-dashboard/StatsGrid";
-import TodayScheduleCard from "../../components/elev-dashboard/TodayScheduleCard";
-import WelcomeCard from "../../components/elev-dashboard/WelcomeCard";
+import AcademicSummaryCard from "../../components/student-dashboard/AcademicSummaryCard";
+import DeadlinesCard from "../../components/student-dashboard/DeadlinesCard";
+import { studentDashboardData } from "../../components/student-dashboard/mockData";
+import NotificationsPreviewCard from "../../components/student-dashboard/NotificationsPreviewCard";
+import RecentGradesCard from "../../components/student-dashboard/RecentGradesCard";
+import StatsGrid from "../../components/student-dashboard/StatsGrid";
+import TodayScheduleCard from "../../components/student-dashboard/TodayScheduleCard";
+import WelcomeCard from "../../components/student-dashboard/WelcomeCard";
 
-const ElevDashboard = () => {
+const StudentDashboard = () => {
     const navigate = useNavigate();
     const session = getAuthSession();
-    const studentName = session?.user.name ?? "Elev";
-    const data = elevDashboardData;
+    const studentName = session?.user.name ?? "Student";
+    const data = studentDashboardData;
 
     return (
         <div className="p-4 md:p-8 w-full min-h-screen bg-gray-50/50">
@@ -25,10 +25,10 @@ const ElevDashboard = () => {
                             summary={data.summary}
                             stats={data.stats}
                             actions={[
-                                { label: "Vezi orarul", onClick: () => navigate("/elev/orar"), primary: true },
-                                { label: "Catalog note", onClick: () => navigate("/elev/catalog") },
-                                { label: "Situatie financiara", onClick: () => navigate("/elev/situatia-financiara") },
-                                { label: "Notificari", onClick: () => navigate("/elev/notificari") },
+                                { label: "Vezi orarul", onClick: () => navigate("/student/orar"), primary: true },
+                                { label: "Catalog note", onClick: () => navigate("/student/catalog") },
+                                { label: "Situatie financiara", onClick: () => navigate("/student/situatia-financiara") },
+                                { label: "Notificari", onClick: () => navigate("/student/notificari") },
                             ]}
                         />
                     </div>
@@ -37,17 +37,17 @@ const ElevDashboard = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <TodayScheduleCard courses={data.today} onOpenSchedule={() => navigate("/elev/orar")} />
+                        <TodayScheduleCard courses={data.today} onOpenSchedule={() => navigate("/student/orar")} />
                     </div>
                     <NotificationsPreviewCard
                         notifications={data.notifications}
-                        onOpenAll={() => navigate("/elev/notificari")}
+                        onOpenAll={() => navigate("/student/notificari")}
                     />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <RecentGradesCard grades={data.recentGrades} onOpenCatalog={() => navigate("/elev/catalog")} />
-                    <DeadlinesCard deadlines={data.deadlines} onOpenCalendar={() => navigate("/elev/orar")} />
+                    <RecentGradesCard grades={data.recentGrades} onOpenCatalog={() => navigate("/student/catalog")} />
+                    <DeadlinesCard deadlines={data.deadlines} onOpenCalendar={() => navigate("/student/orar")} />
                 </div>
 
                 <AcademicSummaryCard summary={data.summary} />
@@ -56,4 +56,4 @@ const ElevDashboard = () => {
     );
 };
 
-export default ElevDashboard;
+export default StudentDashboard;
