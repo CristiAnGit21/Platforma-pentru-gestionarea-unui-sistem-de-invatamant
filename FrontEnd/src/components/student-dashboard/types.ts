@@ -53,7 +53,7 @@ export type StudentNotification = {
     unread?: boolean;
 };
 
-export type ElevDashboardData = {
+export type StudentDashboardData = {
     summary: StudentSummary;
     stats: StudentStats;
     today: StudentCourse[];

@@ -15,7 +15,7 @@ function isAuthSession(value: unknown): value is AuthSession {
     if (typeof user.id !== "string") return false;
     if (typeof user.name !== "string") return false;
     if (typeof user.email !== "string") return false;
-    if (user.role !== "ADMIN" && user.role !== "PROFESOR" && user.role !== "ELEV") return false;
+    if (user.role !== "ADMIN" && user.role !== "PROFESOR" && user.role !== "STUDENT") return false;
 
     return true;
 }
