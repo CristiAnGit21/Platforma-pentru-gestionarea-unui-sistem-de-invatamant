@@ -6,25 +6,26 @@ import PageNotFound from '../pages/404-page';
 import FinancialStatus from "../pages/FinancialStatus.tsx";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ProfesorDashboard from "../pages/dashboard/ProfesorDashboard";
-import StudentDashboard from "../pages/dashboard/StudentDashboard";
+import ElevDashboard from "../pages/dashboard/ElevDashboard";
 import CatalogPage from "../pages/placeholders/CatalogPage";
+import ElevCatalogPage from "../pages/elev/ElevCatalogPage";
 import Professors from "../pages/Professors";
 import ReportPage from "../pages/ReportPage";
 import RoleGuard from "./RoleGuard";
 import { getAuthSession } from "../auth/storage";
 
-type RoleKey = "ADMIN" | "PROFESOR" | "STUDENT";
+type RoleKey = "ADMIN" | "PROFESOR" | "ELEV";
 
 const dashboardByRole: Record<RoleKey, string> = {
     ADMIN: "/admin/dashboard",
     PROFESOR: "/profesor/dashboard",
-    STUDENT: "/student/dashboard",
+    ELEV: "/elev/dashboard",
 };
 
 const prefixByRole: Record<RoleKey, string> = {
     ADMIN: "/admin",
     PROFESOR: "/profesor",
-    STUDENT: "/student",
+    ELEV: "/elev",
 };
 
 const RoleCatchAll = () => {
@@ -36,10 +37,10 @@ const RoleCatchAll = () => {
     }
 
     const role = session.user.role as RoleKey;
-    const allowedPrefix = prefixByRole[role] ?? "/student";
+    const allowedPrefix = prefixByRole[role] ?? "/elev";
 
     if (!location.pathname.startsWith(allowedPrefix)) {
-        const redirectTo = dashboardByRole[role] ?? "/student/dashboard";
+        const redirectTo = dashboardByRole[role] ?? "/elev/dashboard";
         return <Navigate to={redirectTo} replace />;
     }
 
@@ -67,9 +68,9 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/student/situatia-financiara"
+                path="/elev/situatia-financiara"
                 element={
-                    <RoleGuard allowedRoles={["STUDENT"]}>
+                    <RoleGuard allowedRoles={["ELEV"]}>
                         <FinancialStatus />
                     </RoleGuard>
                 }
@@ -107,14 +108,6 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/profesor/catalog"
-                element={
-                    <RoleGuard allowedRoles={["PROFESOR"]}>
-                        <CatalogPage />
-                    </RoleGuard>
-                }
-            />
-            <Route
                 path="/profesor/raporteaza"
                 element={
                     <RoleGuard allowedRoles={["PROFESOR"]}>
@@ -123,25 +116,25 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/student/catalog"
+                path="/elev/catalog"
                 element={
-                    <RoleGuard allowedRoles={["STUDENT"]}>
-                        <CatalogPage />
+                    <RoleGuard allowedRoles={["ELEV"]}>
+                        <ElevCatalogPage />
                     </RoleGuard>
                 }
             />
             <Route
-                path="/student/orar"
+                path="/elev/orar"
                 element={
-                    <RoleGuard allowedRoles={["STUDENT"]}>
+                    <RoleGuard allowedRoles={["ELEV"]}>
                         <Schedule />
                     </RoleGuard>
                 }
             />
             <Route
-                path="/student/notificari"
+                path="/elev/notificari"
                 element={
-                    <RoleGuard allowedRoles={["STUDENT"]}>
+                    <RoleGuard allowedRoles={["ELEV"]}>
                         <Notifications />
                     </RoleGuard>
                 }
@@ -163,17 +156,17 @@ function AppRoutes() {
                 }
             />
             <Route
-                path="/student/dashboard"
+                path="/elev/dashboard"
                 element={
-                    <RoleGuard allowedRoles={["STUDENT"]}>
-                        <StudentDashboard />
+                    <RoleGuard allowedRoles={["ELEV"]}>
+                        <ElevDashboard />
                     </RoleGuard>
                 }
             />
             <Route
-                path="/student/raporteaza"
+                path="/elev/raporteaza"
                 element={
-                    <RoleGuard allowedRoles={["STUDENT"]}>
+                    <RoleGuard allowedRoles={["ELEV"]}>
                         <ReportPage />
                     </RoleGuard>
                 }
