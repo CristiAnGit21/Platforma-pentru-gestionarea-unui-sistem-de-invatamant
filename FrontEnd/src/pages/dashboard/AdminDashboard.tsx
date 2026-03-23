@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { devGet, devRemove, devSet } from "../../utils/devStorage";
+import { devGet, devRemove, devSet } from "../../Utils/devStorage";
 
 const STORAGE_KEY = "utm_pending_users_v1";
 const STUDENTS_KEY = "utm_students_v1";

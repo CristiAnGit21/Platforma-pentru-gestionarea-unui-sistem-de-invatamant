@@ -1,4 +1,4 @@
-import type { CalendarEvent, EventType } from './calendarTypes';
+import type { CalendarEvent } from './calendarTypes';
 import { DAYS_RO, EVENT_CFG, fmtDate, getDaysInMonth, getFirstDayOfWeek } from './calendarTypes';
 
 interface MonthGridProps {
