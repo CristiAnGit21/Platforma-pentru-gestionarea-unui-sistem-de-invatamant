@@ -9,7 +9,7 @@ interface CalendarSidebarProps {
     onNavigateToEvent: (date: string) => void;
 }
 
-const CalendarSidebar = ({ myEvents, savedEvents, onToggleSave, onNavigateToEvent }: CalendarSidebarProps) => {
+const CalendarSidebar = ({ myEvents, savedEvents: _savedEvents, onToggleSave, onNavigateToEvent }: CalendarSidebarProps) => {
     const sorted = [...myEvents].sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
 
     return (

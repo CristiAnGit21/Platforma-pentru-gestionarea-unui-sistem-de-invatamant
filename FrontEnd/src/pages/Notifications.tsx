@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
     Bell, CheckCircle, AlertTriangle, Calendar, FileText,
     BookOpen, X, Check, CheckCheck, Filter, Inbox, UserX
@@ -123,7 +123,6 @@ const Notifications = () => {
                         const isAll = type === 'all';
                         const cfg = isAll ? null : TYPE_CFG[type];
                         const active = activeFilter === type;
-                        const count = isAll ? notifications.length : notifications.filter(n => n.type === type).length;
                         const unread = isAll ? unreadCount : notifications.filter(n => n.type === type && !n.read).length;
 
                         return (
