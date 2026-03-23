@@ -5,7 +5,7 @@ import { MOCK_GROUPS } from '../../components/catalog/catalogTypes';
 import GroupSidebar from '../../components/catalog/GroupSidebar';
 import GradesTab from '../../components/catalog/GradesTab';
 import AttendanceTab from '../../components/catalog/AttendanceTab';
-import { devGet, devSet } from '../../utils/devStorage';
+import { devGet, devSet } from '../../Utils/devStorage';
 
 type TabView = 'note' | 'prezenta';
 
