@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { devGet, devSet } from "../utils/devStorage";
+import { devGet, devSet } from "../Utils/devStorage";
 
 const PROFESSORS_KEY = "utm_professors_v1";
 
