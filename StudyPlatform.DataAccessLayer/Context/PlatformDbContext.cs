@@ -1,23 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StudyPlatform.Domain.Entities.Admin;
-using StudyPlatform.Domain.Entities.Student;
+using StudyPlatform.Domain.Entities; 
 
 namespace StudyPlatform.DataAccessLayer.Context;
 
-public class PlatformDbContext: DbContext
+public class PlatformDbContext : DbContext
 {
-    public DbSet<StudentEntity> Students { get; set; }
-    // public DbSet<CategoryEntity> Categories { get; set; }
-    // public DbSet<StudentCategoryEntity> StudentCategories { get; set; }
-    
-    public DbSet<AdminInfoDto> Admins { get; set; }
+    public DbSet<UserEntity> Users { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
         {
+            // Păstrează parola ta de la postgres dacă este diferită de "postgres"
             optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=studyplatform;Username=postgres;Password=postgres;");
         }
     }
-    
 }

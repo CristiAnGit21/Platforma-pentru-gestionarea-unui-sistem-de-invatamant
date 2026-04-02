@@ -1,5 +1,10 @@
 using StudyPlatform.DataAccessLayer.Context;
+using StudyPlatform.BusinessLayer.Interfaces; 
+using StudyPlatform.BusinessLayer.Core;       
+
 var builder = WebApplication.CreateBuilder(args);
+
+
 builder.Services.AddDbContext<PlatformDbContext>();
 
 builder.Services.AddCors(options =>
@@ -17,6 +22,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IUserLogic, UserLogic>();
 
 var app = builder.Build();
 
