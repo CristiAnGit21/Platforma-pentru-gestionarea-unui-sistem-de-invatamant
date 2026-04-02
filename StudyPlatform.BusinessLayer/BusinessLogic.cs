@@ -7,8 +7,8 @@ public class BusinessLogic
 {
     public BusinessLogic() { }
 
-    public IStudentLogic GetStudentLogic()
+    public IUserLogic GetStudentLogic()
     {
-        return new StudentLogic();
+        return new UserLogic();
     }
 }
