@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StudyPlatform.Domain.Entities; 
+using StudyPlatform.Domain.Entities.Enums; 
 
 namespace StudyPlatform.DataAccessLayer.Context;
 

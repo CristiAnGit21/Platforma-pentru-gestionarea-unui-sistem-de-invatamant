@@ -12,8 +12,8 @@ using StudyPlatform.DataAccessLayer.Context;
 namespace StudyPlatform.DataAccessLayer.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    [Migration("20260402181145_InitialUnifiedSchema")]
-    partial class InitialUnifiedSchema
+    [Migration("20260402194044_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace StudyPlatform.DataAccessLayer.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("StudyPlatform.Domain.Entities.UserEntity", b =>
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.Enums.UserEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,9 +43,8 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
