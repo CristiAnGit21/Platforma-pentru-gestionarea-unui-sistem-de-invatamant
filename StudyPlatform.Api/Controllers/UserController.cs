@@ -19,12 +19,30 @@ public class UserController : ControllerBase
     public IActionResult GetAll() => Ok(_userLogic.GetUserList());
 
     [HttpPost]
-    public IActionResult Create([FromBody] UserInfoDto dto)
+    public IActionResult Create([FromBody] UserCreateDto dto) // SCHIMBAT: Folosim UserCreateDto
     {
         var result = _userLogic.CreateUser(dto);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(Guid id) => Ok(_userLogic.DeleteUser(id));
+    public IActionResult Delete(Guid id)
+    {
+        var result = _userLogic.DeleteUser(id);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+    
+    [HttpGet("{id}")]
+    public IActionResult GetById(Guid id)
+    {
+        var result = _userLogic.GetUserById(id);
+        return result.IsSuccess ? Ok(result) : NotFound(result);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult Update(Guid id, [FromBody] UserInfoDto dto)
+    {
+        var result = _userLogic.UpdateUser(id, dto);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
 }
