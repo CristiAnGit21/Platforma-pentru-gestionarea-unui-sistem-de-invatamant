@@ -14,7 +14,7 @@ public class AttendanceActions
         {
             var record = new AttendanceEntity
             {
-                Date = dto.Date,
+                Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
                 Present = dto.Present,
                 StudentId = dto.StudentId,
                 SubjectId = dto.SubjectId

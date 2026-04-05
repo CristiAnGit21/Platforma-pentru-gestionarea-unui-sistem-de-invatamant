@@ -15,7 +15,7 @@ public class GradeActions
             var grade = new GradeEntity
             {
                 Value = dto.Value,
-                Date = dto.Date,
+                Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
                 SubjectId = dto.SubjectId,
                 StudentId = dto.StudentId
             };
@@ -33,7 +33,7 @@ public class GradeActions
             var grade = context.Grades.FirstOrDefault(x => x.Id == id);
             if (grade is null) return false;
             grade.Value = dto.Value;
-            grade.Date = dto.Date;
+            grade.Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc);
             grade.SubjectId = dto.SubjectId;
             grade.StudentId = dto.StudentId;
             return context.SaveChanges() > 0;
