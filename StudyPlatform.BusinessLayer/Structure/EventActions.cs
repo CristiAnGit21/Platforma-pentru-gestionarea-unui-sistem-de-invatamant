@@ -16,11 +16,12 @@ public class EventActions
             {
                 Title = dto.Title.Trim(),
                 Type = dto.Type,
-                Date = dto.Date,
+                Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime,
                 Location = dto.Location.Trim(),
                 ProfessorId = dto.ProfessorId,
+                ProfessorName = dto.ProfessorName?.Trim(),
                 Description = dto.Description?.Trim()
             };
             context.Events.Add(ev);
@@ -38,11 +39,12 @@ public class EventActions
             if (ev is null) return false;
             ev.Title = dto.Title.Trim();
             ev.Type = dto.Type;
-            ev.Date = dto.Date;
+            ev.Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc);
             ev.StartTime = dto.StartTime;
             ev.EndTime = dto.EndTime;
             ev.Location = dto.Location.Trim();
             ev.ProfessorId = dto.ProfessorId;
+            ev.ProfessorName = dto.ProfessorName?.Trim();
             ev.Description = dto.Description?.Trim();
             return context.SaveChanges() > 0;
         }
@@ -94,6 +96,7 @@ public class EventActions
         EndTime = ev.EndTime,
         Location = ev.Location,
         ProfessorId = ev.ProfessorId,
+        ProfessorName = ev.ProfessorName,
         Description = ev.Description
     };
 }
