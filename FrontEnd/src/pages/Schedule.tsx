@@ -1,16 +1,18 @@
-﻿import { useState, useMemo } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, CalendarDays, List } from 'lucide-react';
 
-import type { EventType } from '../components/calendar/calendarTypes';
+import type { CalendarEvent, EventType } from '../components/calendar/calendarTypes';
 import { EVENT_CFG, MONTHS_RO, fmtDate } from '../components/calendar/calendarTypes';
-import MOCK_EVENTS from '../components/calendar/calendarData';
 import MonthGrid from '../components/calendar/MonthGrid';
 import DayView from '../components/calendar/DayView';
 import CalendarSidebar from '../components/calendar/CalendarSidebar';
+import { useApi } from '../providers/AxiosProvider';
 
 const Orar = () => {
+    const api = useApi();
     const today = new Date();
 
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [cYear, setCYear] = useState(today.getFullYear());
     const [cMonth, setCMonth] = useState(today.getMonth());
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -20,6 +22,22 @@ const Orar = () => {
 
     const todayStr = fmtDate(today.getFullYear(), today.getMonth(), today.getDate());
 
+    useEffect(() => {
+        api.get('/event').then(res => {
+            const raw: Array<{
+                id: string; title: string; type: EventType;
+                date: string; startTime: string; endTime: string;
+                location: string; professorName?: string; description?: string;
+            }> = res.data?.data ?? res.data ?? [];
+            const mapped: CalendarEvent[] = raw.map(e => ({
+                ...e,
+                date: e.date.split('T')[0],   // "2026-04-10T00:00:00" → "2026-04-10"
+                professor: e.professorName,
+            }));
+            setEvents(mapped);
+        }).catch(err => console.error('Eroare la încărcarea evenimentelor:', err));
+    }, [api]);
+
     const goToPrev = () => { if (cMonth === 0) { setCMonth(11); setCYear(y => y - 1); } else setCMonth(m => m - 1); };
     const goToNext = () => { if (cMonth === 11) { setCMonth(0); setCYear(y => y + 1); } else setCMonth(m => m + 1); };
     const goToToday = () => { setCYear(today.getFullYear()); setCMonth(today.getMonth()); setSelectedDate(todayStr); };
@@ -27,9 +45,9 @@ const Orar = () => {
     const toggleFilter = (t: EventType) => setActiveFilters(p => { const n = new Set(p); n.has(t) ? n.delete(t) : n.add(t); return n; });
     const toggleSave = (id: string) => setSavedEvents(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
-    const filtered = useMemo(() => MOCK_EVENTS.filter(e => activeFilters.has(e.type)), [activeFilters]);
+    const filtered = useMemo(() => events.filter(e => activeFilters.has(e.type)), [events, activeFilters]);
     const dayEvts = selectedDate ? filtered.filter(e => e.date === selectedDate) : [];
-    const myEvents = MOCK_EVENTS.filter(e => savedEvents.has(e.id));
+    const myEvents = events.filter(e => savedEvents.has(e.id));
 
     const handleSelectDay = (dateStr: string) => { setSelectedDate(dateStr); setCalView('day'); };
     const handleNavigateToEvent = (date: string) => { setSelectedDate(date); setCalView('day'); };
