@@ -12,5 +12,6 @@ public class EventEntity
     public string EndTime { get; set; }     // "HH:mm"
     public string Location { get; set; }
     public Guid? ProfessorId { get; set; }
+    public string? ProfessorName { get; set; }
     public string? Description { get; set; }
 }
