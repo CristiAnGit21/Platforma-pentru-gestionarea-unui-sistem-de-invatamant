@@ -130,4 +130,29 @@ public class UserActions
             }
         }
     }
+
+    public List<UserInfoDto> GetUsersByRole(UserRole role)
+    {
+        using (var context = new PlatformDbContext())
+        {
+            try
+            {
+                return context.Users
+                    .AsNoTracking()
+                    .Where(x => x.Role == role)
+                    .Select(x => new UserInfoDto
+                    {
+                        Id = x.Id,
+                        FirstName = x.FirstName,
+                        LastName = x.LastName,
+                        Email = x.Email,
+                        Role = x.Role
+                    }).ToList();
+            }
+            catch (Exception)
+            {
+                return new List<UserInfoDto>();
+            }
+        }
+    }
 }
