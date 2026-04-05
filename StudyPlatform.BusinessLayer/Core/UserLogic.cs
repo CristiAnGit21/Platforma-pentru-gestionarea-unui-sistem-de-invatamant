@@ -1,5 +1,6 @@
 ﻿using StudyPlatform.BusinessLayer.Interfaces;
 using StudyPlatform.BusinessLayer.Structure;
+using StudyPlatform.Domain.Entities.Enums;
 using StudyPlatform.Domain.Models.Service;
 using StudyPlatform.Domain.Models.User;
 
@@ -81,11 +82,26 @@ public class UserLogic : UserActions, IUserLogic
         try
         {
             var users = base.GetUserList();
-            return new ServiceResponse 
-            { 
-                IsSuccess = true, 
+            return new ServiceResponse
+            {
+                IsSuccess = true,
                 Data = users,
                 Message = $"Au fost găsiți {users.Count} utilizatori."
+            };
+        }
+        catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
+    }
+
+    public ServiceResponse GetUsersByRole(UserRole role)
+    {
+        try
+        {
+            var users = base.GetUsersByRole(role);
+            return new ServiceResponse
+            {
+                IsSuccess = true,
+                Data = users,
+                Message = $"Au fost găsiți {users.Count} utilizatori cu rolul {role}."
             };
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }

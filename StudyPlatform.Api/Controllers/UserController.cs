@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.BusinessLayer.Interfaces;
+using StudyPlatform.Domain.Entities.Enums;
 using StudyPlatform.Domain.Models.User;
 
 namespace StudyPlatform.Api.Controllers;
@@ -45,4 +46,7 @@ public class UserController : ControllerBase
         var result = _userLogic.UpdateUser(id, dto);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
+
+    [HttpGet("role/{role}")]
+    public IActionResult GetByRole(UserRole role) => Ok(_userLogic.GetUsersByRole(role));
 }

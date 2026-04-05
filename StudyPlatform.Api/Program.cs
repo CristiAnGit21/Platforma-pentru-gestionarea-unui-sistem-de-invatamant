@@ -1,9 +1,9 @@
+using System.Text.Json.Serialization;
 using StudyPlatform.DataAccessLayer.Context;
-using StudyPlatform.BusinessLayer.Interfaces; 
-using StudyPlatform.BusinessLayer.Core;       
+using StudyPlatform.BusinessLayer.Interfaces;
+using StudyPlatform.BusinessLayer.Core;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Services.AddDbContext<PlatformDbContext>();
 
@@ -18,11 +18,26 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
+    });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.UseInlineDefinitionsForEnums();
+});
 
+// Services
 builder.Services.AddScoped<IUserLogic, UserLogic>();
+builder.Services.AddScoped<IGroupLogic, GroupLogic>();
+builder.Services.AddScoped<ISubjectLogic, SubjectLogic>();
+builder.Services.AddScoped<IGradeLogic, GradeLogic>();
+builder.Services.AddScoped<IAttendanceLogic, AttendanceLogic>();
+builder.Services.AddScoped<IReportLogic, ReportLogic>();
+builder.Services.AddScoped<IEventLogic, EventLogic>();
 
 var app = builder.Build();
 

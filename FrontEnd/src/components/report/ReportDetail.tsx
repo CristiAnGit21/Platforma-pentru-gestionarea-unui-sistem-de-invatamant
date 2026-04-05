@@ -21,7 +21,7 @@ const ReportDetail = ({ report, onBack }: ReportDetailProps) => {
         ...(report.status !== 'trimis' ? [{ label: 'În curs de analiză', date: report.updatedAt, done: true }] : []),
         ...(report.status === 'rezolvat' ? [{ label: 'Problemă rezolvată', date: report.updatedAt, done: true }] : []),
         ...(report.status === 'respins' ? [{ label: 'Raport respins', date: report.updatedAt, done: true }] : []),
-        ...(report.status === 'trimis' || report.status === 'in_lucru' ? [{ label: 'Așteptare rezolvare', date: '', done: false }] : []),
+        ...(report.status === 'trimis' || report.status === 'inLucru' ? [{ label: 'Așteptare rezolvare', date: '', done: false }] : []),
     ];
 
     return (
