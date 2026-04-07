@@ -14,7 +14,6 @@ public class EventController : ControllerBase
     {
         _eventLogic = eventLogic;
     }
-
     [HttpGet]
     public IActionResult GetAll() => Ok(_eventLogic.GetEventList());
 
