@@ -11,9 +11,10 @@ public class UserController : ControllerBase
 {
     private readonly IUserLogic _userLogic;
 
-    public UserController(IUserLogic userLogic)
+    public UserController()
     {
-        _userLogic = userLogic;
+        var bl = new BusinessLayer.BusinessLogic();
+        _userLogic = bl.UserLogic();
     }
 
     [HttpGet]

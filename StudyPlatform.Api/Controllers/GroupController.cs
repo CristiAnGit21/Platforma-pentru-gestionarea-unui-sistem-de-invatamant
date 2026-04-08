@@ -10,9 +10,10 @@ public class GroupController : ControllerBase
 {
     private readonly IGroupLogic _groupLogic;
 
-    public GroupController(IGroupLogic groupLogic)
+    public GroupController()
     {
-        _groupLogic = groupLogic;
+        var bl = new BusinessLayer.BusinessLogic();
+        _groupLogic = bl.GroupLogic();
     }
 
     [HttpGet]

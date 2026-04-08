@@ -10,9 +10,10 @@ public class SubjectController : ControllerBase
 {
     private readonly ISubjectLogic _subjectLogic;
 
-    public SubjectController(ISubjectLogic subjectLogic)
+    public SubjectController()
     {
-        _subjectLogic = subjectLogic;
+        var bl = new BusinessLayer.BusinessLogic();
+        _subjectLogic = bl.SubjectLogic();
     }
 
     [HttpGet]

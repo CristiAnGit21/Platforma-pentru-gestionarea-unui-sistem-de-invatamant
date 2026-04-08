@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
 using StudyPlatform.DataAccessLayer.Context;
-using StudyPlatform.BusinessLayer.Interfaces;
-using StudyPlatform.BusinessLayer.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,14 +28,6 @@ builder.Services.AddSwaggerGen(c =>
     c.UseInlineDefinitionsForEnums();
 });
 
-// Services
-builder.Services.AddScoped<IUserLogic, UserLogic>();
-builder.Services.AddScoped<IGroupLogic, GroupLogic>();
-builder.Services.AddScoped<ISubjectLogic, SubjectLogic>();
-builder.Services.AddScoped<IGradeLogic, GradeLogic>();
-builder.Services.AddScoped<IAttendanceLogic, AttendanceLogic>();
-builder.Services.AddScoped<IReportLogic, ReportLogic>();
-builder.Services.AddScoped<IEventLogic, EventLogic>();
 
 var app = builder.Build();
 
