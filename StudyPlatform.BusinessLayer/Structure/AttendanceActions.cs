@@ -53,7 +53,6 @@ public class AttendanceActions
         }
         catch (Exception ex) { Console.WriteLine($"Eroare la ștergere prezență: {ex.Message}"); return false; }
     }
-
     public AttendanceInfoDto? GetAttendanceById(Guid id)
     {
         using var context = new PlatformDbContext();
