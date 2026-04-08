@@ -10,9 +10,10 @@ public class GradeController : ControllerBase
 {
     private readonly IGradeLogic _gradeLogic;
 
-    public GradeController(IGradeLogic gradeLogic)
+    public GradeController()
     {
-        _gradeLogic = gradeLogic;
+        var bl = new BusinessLayer.BusinessLogic();
+        _gradeLogic = bl.GradeLogic();
     }
 
     [HttpGet]

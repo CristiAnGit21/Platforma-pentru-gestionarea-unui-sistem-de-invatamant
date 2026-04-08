@@ -10,11 +10,11 @@ public class EventController : ControllerBase
 {
     private readonly IEventLogic _eventLogic;
 
-    public EventController(IEventLogic eventLogic)
+    public EventController()
     {
-        _eventLogic = eventLogic;
+        var bl = new BusinessLayer.BusinessLogic();
+        _eventLogic = bl.EventLogic();
     }
-
     [HttpGet]
     public IActionResult GetAll() => Ok(_eventLogic.GetEventList());
 

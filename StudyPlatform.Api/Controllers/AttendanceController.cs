@@ -10,9 +10,10 @@ public class AttendanceController : ControllerBase
 {
     private readonly IAttendanceLogic _attendanceLogic;
 
-    public AttendanceController(IAttendanceLogic attendanceLogic)
+    public AttendanceController()
     {
-        _attendanceLogic = attendanceLogic;
+        var bl = new BusinessLayer.BusinessLogic();
+        _attendanceLogic = bl.AttendanceLogic();
     }
 
     [HttpGet]

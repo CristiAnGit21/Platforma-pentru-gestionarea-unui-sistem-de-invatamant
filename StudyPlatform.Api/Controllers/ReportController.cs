@@ -10,9 +10,10 @@ public class ReportController : ControllerBase
 {
     private readonly IReportLogic _reportLogic;
 
-    public ReportController(IReportLogic reportLogic)
+    public ReportController()
     {
-        _reportLogic = reportLogic;
+        var bl = new BusinessLayer.BusinessLogic();
+        _reportLogic = bl.ReportLogic();
     }
 
     [HttpGet]
