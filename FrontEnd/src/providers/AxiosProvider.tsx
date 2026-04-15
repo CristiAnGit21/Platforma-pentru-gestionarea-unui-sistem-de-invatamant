@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from "re
 import axios, { AxiosError, type AxiosInstance } from "axios";
 import { clearAuthSession, getAuthSession } from "../auth/storage";
 
-const API_BASE_URL = "http://localhost:5298/api";
+const API_BASE_URL = "https://localhost:44372/api";
 
 const AxiosContext = createContext<AxiosInstance | null>(null);
 

@@ -1,26 +1,10 @@
-import { useEffect, useState } from "react";
-import { devGet, devRemove, devSet } from "../../Utils/devStorage";
+import { useCallback, useEffect, useState } from "react";
+import { AxiosError } from "axios";
+import { useApi } from "../../providers/AxiosProvider";
 
-const STORAGE_KEY = "utm_pending_users_v1";
-const STUDENTS_KEY = "utm_students_v1";
-const PROFESSORS_KEY = "utm_professors_v1";
-const GROUPS_KEY = "utm_groups_v1";
-
-type PendingUser = { id: string; name: string; email: string };
+type PendingUser = { id: string; name: string; email: string; requestedRole: Role };
 
 type Role = "Student" | "Profesor";
-
-type AssignedUser = PendingUser & { role: Role; status: "UNCONFIRMED" };
-
-const initialPendingUsers: PendingUser[] = [
-    { id: "1", name: "Ion Popescu", email: "ion@test.com" },
-    { id: "2", name: "Maria Ionescu", email: "maria@test.com" },
-];
-
-function getInitialPendingUsers(): PendingUser[] {
-    const stored = devGet<PendingUser[]>(STORAGE_KEY, initialPendingUsers);
-    return Array.isArray(stored) ? stored : initialPendingUsers;
-}
 
 type Group = {
     id: string;
@@ -33,118 +17,208 @@ type Group = {
 
 type Professor = { id: string; name: string; status: string; email: string };
 
-const AdminDashboard = () => {
-    const [pendingUsers, setPendingUsers] = useState<PendingUser[]>(() =>
-        getInitialPendingUsers()
-    );
-    const [message, setMessage] = useState<string | null>(null);
+type BackendUser = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: number | string;
+    status: number | string;
+};
 
-    // Grupe state - initialized from storage
-    const [groups, setGroups] = useState<Group[]>(() => devGet<Group[]>(GROUPS_KEY, []));
+type BackendGroup = {
+    id: string;
+    name: string;
+    year: number;
+};
+
+type ApiEnvelope<T> = {
+    isSuccess?: boolean;
+    message?: string;
+    data?: T;
+};
+
+function parseApiData<T>(payload: unknown): T {
+    const maybeEnvelope = payload as ApiEnvelope<T>;
+    if (maybeEnvelope?.data !== undefined) {
+        return maybeEnvelope.data;
+    }
+
+    return payload as T;
+}
+
+function normalizeBackendRole(role: number | string): Role | "Admin" {
+    if (typeof role === "number") {
+        if (role === 0) return "Student";
+        if (role === 1) return "Profesor";
+        return "Admin";
+    }
+
+    const value = String(role).toLowerCase();
+    if (value === "student") return "Student";
+    if (value === "professor" || value === "profesor") return "Profesor";
+    return "Admin";
+}
+
+function toBackendRole(role: Role): "Student" | "Professor" {
+    return role === "Student" ? "Student" : "Professor";
+}
+
+function normalizeBackendStatus(status: number | string): "Pending" | "Active" | "Unknown" {
+    if (typeof status === "number") {
+        if (status === 0) return "Pending";
+        if (status === 1) return "Active";
+        return "Unknown";
+    }
+
+    const value = String(status).toLowerCase();
+    if (value === "pending") return "Pending";
+    if (value === "active") return "Active";
+    return "Unknown";
+}
+
+function splitName(fullName: string): { firstName: string; lastName: string } {
+    const trimmed = fullName.trim();
+    if (!trimmed) return { firstName: "User", lastName: "Updated" };
+
+    const [firstName, ...lastNameParts] = trimmed.split(/\s+/);
+    return {
+        firstName,
+        lastName: lastNameParts.join(" ") || "Updated",
+    };
+}
+
+const AdminDashboard = () => {
+    const api = useApi();
+    const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+    const [message, setMessage] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [groups, setGroups] = useState<Group[]>([]);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [groupForm, setGroupForm] = useState({ name: "", year: 1, specialization: "", professorId: "" });
 
-    // Active professors and students for assignment
     const [activeProfessors, setActiveProfessors] = useState<Professor[]>([]);
-    const [allActiveStudents, setAllActiveStudents] = useState<any[]>([]);
+    const [allActiveStudents, setAllActiveStudents] = useState<PendingUser[]>([]);
 
-    // Student assignment modal state
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [editingGroup, setEditingGroup] = useState<Group | null>(null);
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+    const [groupStudentMap, setGroupStudentMap] = useState<Record<string, string[]>>({});
 
-    const [roleByUserId, setRoleByUserId] = useState<Record<string, Role>>({
-        "1": "Profesor",
-        "2": "Student",
-    });
-
-    // Auto-persist pending users
-    useEffect(() => {
-        devSet(STORAGE_KEY, pendingUsers);
-    }, [pendingUsers]);
-
-    // Auto-persist groups
-    useEffect(() => {
-        devSet(GROUPS_KEY, groups);
-    }, [groups]);
-
-    // Load active professors and students
-    useEffect(() => {
-        const rawProfs = devGet<any[]>(PROFESSORS_KEY, []);
-        if (Array.isArray(rawProfs)) {
-            setActiveProfessors(rawProfs.filter(p => p.status === "ACTIVE"));
-        }
-
-        const rawStudents = devGet<any[]>(STUDENTS_KEY, []);
-        if (Array.isArray(rawStudents)) {
-            setAllActiveStudents(rawStudents.filter(s => s.status === "ACTIVE"));
-        }
-    }, [isGroupModalOpen, isAssignModalOpen]);
-
-    const pushToList = (key: string, user: AssignedUser) => {
-        const existing = devGet<AssignedUser[]>(key, []);
-        const list = Array.isArray(existing) ? existing : [];
-
-        // Evităm duplicatele după reset/refresh
-        const alreadyExists = list.some((u) => u.id === user.id);
-        if (!alreadyExists) list.push(user);
-
-        devSet(key, list);
-    };
-
-    // FIX IMPORTANT: selectedRole e primit ca argument, nu citit din state în interior
-    const handleSetRole = (user: PendingUser, selectedRole: Role) => {
-        const newUser: AssignedUser = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: selectedRole,
-            status: "UNCONFIRMED",
-        };
-
-        if (selectedRole === "Student") {
-            pushToList(STUDENTS_KEY, newUser);
-        } else {
-            pushToList(PROFESSORS_KEY, newUser);
-        }
-
-        setPendingUsers((prev) => prev.filter((u) => u.id !== user.id));
-        setMessage(`Rolul pentru ${user.name} a fost setat ca ${selectedRole}`);
+    const showTemporaryMessage = (text: string) => {
+        setMessage(text);
         window.setTimeout(() => setMessage(null), 3000);
     };
 
-    const handleResetDemo = () => {
-        devRemove(STORAGE_KEY);
-        devRemove(STUDENTS_KEY);
-        devRemove(PROFESSORS_KEY);
-        devRemove(GROUPS_KEY);
+    const fetchDashboardData = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const [usersResponse, groupsResponse] = await Promise.all([
+                api.get("/User"),
+                api.get("/Group"),
+            ]);
 
-        setPendingUsers(initialPendingUsers);
-        setRoleByUserId({
-            "1": "Profesor",
-            "2": "Student",
-        });
-        setGroups([]);
-        setMessage(null);
+            const users = parseApiData<BackendUser[]>(usersResponse.data);
+            const fetchedGroups = parseApiData<BackendGroup[]>(groupsResponse.data);
+            const safeUsers = Array.isArray(users) ? users : [];
+            const safeGroups = Array.isArray(fetchedGroups) ? fetchedGroups : [];
+
+            const nextPendingUsers: PendingUser[] = [];
+            const nextActiveProfessors: Professor[] = [];
+            const nextActiveStudents: PendingUser[] = [];
+
+            for (const user of safeUsers) {
+                const normalizedRole = normalizeBackendRole(user.role);
+                const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+                const mappedUser: PendingUser = {
+                    id: user.id,
+                    name: fullName || user.email,
+                    email: user.email,
+                    requestedRole: normalizedRole === "Admin" ? "Student" : normalizedRole,
+                };
+                const normalizedStatus = normalizeBackendStatus(user.status);
+
+                if (normalizedStatus === "Pending" && (normalizedRole === "Student" || normalizedRole === "Profesor")) {
+                    nextPendingUsers.push(mappedUser);
+                } else if (normalizedRole === "Student" && normalizedStatus === "Active") {
+                    nextActiveStudents.push(mappedUser);
+                } else if (normalizedRole === "Profesor" && normalizedStatus === "Active") {
+                    nextActiveProfessors.push({ ...mappedUser, status: "ACTIVE" });
+                }
+            }
+
+            setPendingUsers(nextPendingUsers);
+            setActiveProfessors(nextActiveProfessors);
+            setAllActiveStudents(nextActiveStudents);
+            setGroups(
+                safeGroups.map((group) => ({
+                    id: group.id,
+                    name: group.name,
+                    year: group.year,
+                    specialization: "",
+                    professorId: undefined,
+                    studentIds: groupStudentMap[group.id] ?? [],
+                }))
+            );
+        } catch (error) {
+            const messageText =
+                error instanceof AxiosError
+                    ? error.response?.data?.message ?? error.message
+                    : "Nu s-au putut încărca datele dashboard-ului.";
+            showTemporaryMessage(messageText);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [api, groupStudentMap]);
+
+    useEffect(() => {
+        void fetchDashboardData();
+    }, [fetchDashboardData]);
+
+    const handleSetRole = async (user: PendingUser) => {
+        try {
+            const { firstName, lastName } = splitName(user.name);
+            await api.put(`/User/${user.id}`, {
+                id: user.id,
+                firstName,
+                lastName,
+                email: user.email,
+                role: toBackendRole(user.requestedRole),
+                status: 1,
+            });
+
+            await fetchDashboardData();
+            showTemporaryMessage(`Utilizatorul ${user.name} a fost confirmat.`);
+        } catch (error) {
+            const messageText =
+                error instanceof AxiosError
+                    ? error.response?.data?.message ?? error.message
+                    : "Nu s-a putut actualiza rolul utilizatorului.";
+            showTemporaryMessage(messageText);
+        }
     };
 
-    const handleCreateGroup = () => {
+    const handleCreateGroup = async () => {
         if (!groupForm.name.trim()) return;
 
-        const newGroup: Group = {
-            id: Date.now().toString(),
-            name: groupForm.name,
-            year: groupForm.year,
-            specialization: groupForm.specialization,
-            professorId: groupForm.professorId || undefined,
-            studentIds: [],
-        };
+        try {
+            await api.post("/Group", {
+                name: groupForm.name.trim(),
+                year: groupForm.year,
+            });
 
-        setGroups((prev) => [...prev, newGroup]);
-        setIsGroupModalOpen(false);
-        setGroupForm({ name: "", year: 1, specialization: "", professorId: "" });
-        setMessage(`Grupa "${newGroup.name}" a fost creată cu succes.`);
-        window.setTimeout(() => setMessage(null), 3000);
+            await fetchDashboardData();
+            setIsGroupModalOpen(false);
+            setGroupForm({ name: "", year: 1, specialization: "", professorId: "" });
+            showTemporaryMessage(`Grupa "${groupForm.name}" a fost creată cu succes.`);
+        } catch (error) {
+            const messageText =
+                error instanceof AxiosError
+                    ? error.response?.data?.message ?? error.message
+                    : "Nu s-a putut crea grupa.";
+            showTemporaryMessage(messageText);
+        }
     };
 
     const handleOpenAssignModal = (group: Group) => {
@@ -153,21 +227,45 @@ const AdminDashboard = () => {
         setIsAssignModalOpen(true);
     };
 
-    const handleSaveAssignment = () => {
+    const handleSaveAssignment = async () => {
         if (!editingGroup) return;
 
-        setGroups((prev) =>
-            prev.map((g) =>
-                g.id === editingGroup.id
-                    ? { ...g, studentIds: selectedStudentIds }
-                    : g
-            )
-        );
-        setIsAssignModalOpen(false);
-        setEditingGroup(null);
-        setSelectedStudentIds([]);
-        setMessage(`Studenții au fost asignați grupei "${editingGroup.name}".`);
-        window.setTimeout(() => setMessage(null), 3000);
+        try {
+            try {
+                await api.put(`/Group/${editingGroup.id}/students`, {
+                    studentIds: selectedStudentIds,
+                });
+            } catch {
+                try {
+                    await api.post(`/Group/${editingGroup.id}/students`, {
+                        studentIds: selectedStudentIds,
+                    });
+                } catch {
+                    await api.put(`/Group/${editingGroup.id}`, {
+                        id: editingGroup.id,
+                        name: editingGroup.name,
+                        year: editingGroup.year,
+                        studentIds: selectedStudentIds,
+                    });
+                }
+            }
+
+            setGroupStudentMap((prev) => ({
+                ...prev,
+                [editingGroup.id]: selectedStudentIds,
+            }));
+            await fetchDashboardData();
+            setIsAssignModalOpen(false);
+            setEditingGroup(null);
+            setSelectedStudentIds([]);
+            showTemporaryMessage(`Studenții au fost asignați grupei "${editingGroup.name}".`);
+        } catch (error) {
+            const messageText =
+                error instanceof AxiosError
+                    ? error.response?.data?.message ?? error.message
+                    : "Nu s-au putut salva asignările studenților.";
+            showTemporaryMessage(messageText);
+        }
     };
 
     const toggleStudentSelection = (studentId: string) => {
@@ -195,6 +293,11 @@ const AdminDashboard = () => {
                         {message}
                     </div>
                 )}
+                {isLoading && (
+                    <div className="mb-4 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg p-3">
+                        Se încarcă datele din server...
+                    </div>
+                )}
 
                 <div className="mt-8 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -203,10 +306,10 @@ const AdminDashboard = () => {
                         </h2>
                         <button
                             type="button"
-                            onClick={handleResetDemo}
+                            onClick={() => void fetchDashboardData()}
                             className="text-sm bg-gray-100 hover:bg-gray-200 rounded-md px-3 py-1"
                         >
-                            Reset date demo
+                            Reîncarcă date
                         </button>
                     </div>
 
@@ -215,8 +318,6 @@ const AdminDashboard = () => {
                     ) : (
                         <div className="space-y-4">
                             {pendingUsers.map((user) => {
-                                const currentRole = roleByUserId[user.id] ?? "Profesor";
-
                                 return (
                                     <div
                                         key={user.id}
@@ -229,26 +330,16 @@ const AdminDashboard = () => {
                                             {user.email}
                                         </span>
 
-                                        <select
-                                            value={currentRole}
-                                            onChange={(e) =>
-                                                setRoleByUserId((prev) => ({
-                                                    ...prev,
-                                                    [user.id]: e.target.value as Role,
-                                                }))
-                                            }
-                                            className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none"
-                                        >
-                                            <option value="Profesor">Profesor</option>
-                                            <option value="Student">Student</option>
-                                        </select>
+                                        <span className="px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 text-sm">
+                                            Rol solicitat: {user.requestedRole}
+                                        </span>
 
                                         <button
                                             type="button"
-                                            onClick={() => handleSetRole(user, currentRole)}
+                                            onClick={() => handleSetRole(user)}
                                             className="px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
                                         >
-                                            Setează rol
+                                            Confirmă utilizator
                                         </button>
                                     </div>
                                 );

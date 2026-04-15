@@ -1,110 +1,117 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { devGet, devSet } from "../Utils/devStorage";
+import { AxiosError } from "axios";
 import { getAuthSession } from "../auth/storage";
-
-const STUDENTS_KEY = "utm_students_v1";
+import { useApi } from "../providers/AxiosProvider";
 
 type StudentStatus = "UNCONFIRMED" | "ACTIVE";
 
 type Student = {
   id: string;
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
-  role: string;
-  status: StudentStatus;
+  role: number | string;
+  status: number | string;
 };
 
-function toStudentStatus(v: unknown): StudentStatus {
-  const s = String(v ?? "UNCONFIRMED").trim().toUpperCase();
-  return s === "ACTIVE" ? "ACTIVE" : "UNCONFIRMED";
-}
-
-type RawStudent = {
-  id?: unknown;
-  name?: unknown;
-  fullName?: unknown;
-  email?: unknown;
-  role?: unknown;
-  status?: unknown;
+type ApiEnvelope<T> = {
+  data?: T;
 };
 
-function loadStudents(): Student[] {
-  const raw = devGet<unknown[]>(STUDENTS_KEY, []);
-  if (!Array.isArray(raw)) return [];
-
-  return (raw as RawStudent[])
-    .map(
-      (s): Student => ({
-        id: String(s.id ?? ""),
-        name: String(s.name ?? s.fullName ?? ""),
-        email: String(s.email ?? ""),
-        role: String(s.role ?? "Student"),
-        status: toStudentStatus(s.status),
-      })
-    )
-    .filter((s) => Boolean(s.id) && Boolean(s.email));
+function parseApiData<T>(payload: unknown): T {
+  const maybeEnvelope = payload as ApiEnvelope<T>;
+  if (maybeEnvelope?.data !== undefined) return maybeEnvelope.data;
+  return payload as T;
 }
 
-/** Persist a student list and return it (for use in setState callbacks). */
-function saveStudents(students: Student[]): Student[] {
-  devSet(STUDENTS_KEY, students);
-  return students;
+function normalizeRole(role: number | string): "Student" | "Profesor" | "Admin" {
+  if (typeof role === "number") {
+    if (role === 0) return "Student";
+    if (role === 1) return "Profesor";
+    return "Admin";
+  }
+
+  const value = String(role).toLowerCase();
+  if (value === "student") return "Student";
+  if (value === "professor" || value === "profesor") return "Profesor";
+  return "Admin";
+}
+
+function toStudentStatus(v: number | string): StudentStatus {
+  if (typeof v === "number") return v === 1 ? "ACTIVE" : "UNCONFIRMED";
+  const normalized = String(v).trim().toLowerCase();
+  if (normalized === "1" || normalized === "active") return "ACTIVE";
+  return "UNCONFIRMED";
 }
 
 export default function Students() {
+  const api = useApi();
   const [students, setStudents] = useState<Student[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"Neconfirmați" | "Activi">(
     "Neconfirmați"
   );
   const [query, setQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const session = getAuthSession();
   const role = session?.user.role;
   const isAdmin = role === "ADMIN";
 
-  // IMPORTANT: funcție de sync pe care o putem apela oricând
-  // NOTE: We do NOT write back after reading — that was the original bug.
-  //       Writing is done explicitly only in mutation handlers below.
-  const syncFromStorage = useCallback(() => {
-    const loaded = loadStudents();
-    setStudents(loaded);
-  }, []);
+  const fetchStudents = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get("/User");
+      const allUsers = parseApiData<Student[]>(response.data);
+      const list = Array.isArray(allUsers) ? allUsers : [];
+      console.log("Date primite de la server:", list);
+      setStudents(
+        list
+          .filter((s) => normalizeRole(s.role) === "Student")
+          .map((s) => ({
+            ...s,
+            name: `${s.firstName ?? ""} ${s.lastName ?? ""}`.trim() || s.email,
+          }))
+      );
+    } catch (error) {
+      const errText =
+        error instanceof AxiosError
+          ? error.response?.data?.message ?? error.message
+          : "Nu s-au putut încărca studenții.";
+      setMessage(errText);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [api]);
 
-  // 1) Load pe mount
   useEffect(() => {
-    syncFromStorage();
-  }, [syncFromStorage]);
-
-  // 2) Re-sync când revii în tab (după ce ai setat rol din Dashboard)
-  useEffect(() => {
-    const onFocus = () => syncFromStorage();
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, [syncFromStorage]);
-
-  // NOTE: There is intentionally NO useEffect that writes students back to
-  // storage on every render. That pattern was causing the empty-array race:
-  //   mount → Effect(load) schedules setStudents(loaded) [async]
-  //         → Effect(persist) fires immediately with students=[] → overwrites storage
-  // Instead, every mutation explicitly calls saveStudents() inside the updater.
-
-  const selectedGroupId = devGet<string>("utm_selected_group_v1", "");
-  const groups = devGet<any[]>("utm_groups_v1", []);
-  const selectedGroup = groups.find(g => g.id === selectedGroupId);
+    void fetchStudents();
+  }, [fetchStudents]);
 
   const unconfirmed = useMemo(
-    () => students.filter((s) => s.status === "UNCONFIRMED"),
+    () =>
+      students.filter(
+        (s) =>
+          normalizeRole(s.role) === "Student" &&
+          toStudentStatus(s.status) === "UNCONFIRMED"
+      ),
     [students]
   );
   const active = useMemo(
-    () => students.filter((s) => s.status === "ACTIVE"),
+    // Tab-ul Studenți: role === 0 și status === 1 (ACTIVE)
+    () =>
+      students.filter(
+        (s) =>
+          normalizeRole(s.role) === "Student" &&
+          toStudentStatus(s.status) === "ACTIVE"
+      ),
     [students]
   );
 
-  // Professors only see students from the selected group; Admin sees based on tab
   const currentList = isAdmin
     ? (activeTab === "Neconfirmați" ? unconfirmed : active)
-    : active.filter(s => selectedGroup?.studentIds?.includes(s.id));
+    : active;
 
   const q = query.trim().toLowerCase();
   const filtered =
@@ -116,36 +123,32 @@ export default function Students() {
           s.email.toLowerCase().includes(q)
       );
 
-  const handleConfirm = (id: string) => {
-    setStudents((prev) => {
-      const next = prev.map((s) =>
-        s.id === id ? { ...s, status: "ACTIVE" as StudentStatus } : s
-      );
-      return saveStudents(next);
-    });
+  const setStatus = async (student: Student, status: 0 | 1) => {
+    try {
+      await api.put(`/User/${student.id}`, {
+        id: student.id,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        email: student.email,
+        role: 0,
+        status,
+      });
+      await fetchStudents();
+    } catch (error) {
+      const errText =
+        error instanceof AxiosError
+          ? error.response?.data?.message ?? error.message
+          : "Nu s-a putut actualiza studentul.";
+      setMessage(errText);
+    }
   };
 
-  const handleReject = (id: string) => {
-    setStudents((prev) => {
-      const next = prev.filter((s) => s.id !== id);
-      return saveStudents(next);
-    });
-  };
-
-  const handleDeactivate = (id: string) => {
-    setStudents((prev) => {
-      const next = prev.map((s) =>
-        s.id === id ? { ...s, status: "UNCONFIRMED" as StudentStatus } : s
-      );
-      return saveStudents(next);
-    });
-  };
+  const handleConfirm = (student: Student) => void setStatus(student, 1);
+  const handleDeactivate = (student: Student) => void setStatus(student, 0);
 
   const emptyListMessage = isAdmin
     ? (activeTab === "Neconfirmați" ? "Nu există studenți neconfirmați." : "Nu există studenți activi.")
-    : !selectedGroupId
-      ? "Selectați o grupă din Catalog pentru a vedea studenții."
-      : "Nu există studenți în această grupă.";
+    : "Nu există studenți activi.";
 
   return (
     <div className="p-6">
@@ -155,9 +158,14 @@ export default function Students() {
             Studenți
           </h1>
           <p className="text-gray-500 mt-2">
-            {isAdmin ? "Gestionare studenți și conturi (front-only)" : "Listă studenți activi"}
+            {isAdmin ? "Gestionare studenți și conturi" : "Listă studenți activi"}
           </p>
         </div>
+        {message && (
+          <div className="mb-4 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg p-3">
+            {message}
+          </div>
+        )}
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
           <div className="flex flex-col gap-4 mb-4">
@@ -198,10 +206,10 @@ export default function Students() {
               {isAdmin && (
                 <button
                   type="button"
-                  onClick={syncFromStorage}
+                  onClick={() => void fetchStudents()}
                   className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50"
                 >
-                  Reîncarcă din storage
+                  Reîncarcă din server
                 </button>
               )}
             </div>
@@ -216,6 +224,8 @@ export default function Students() {
 
           {currentList.length === 0 ? (
             <p className="text-gray-500 text-center py-8">{emptyListMessage}</p>
+          ) : isLoading ? (
+            <p className="text-gray-500 text-center py-8">Se încarcă studenții...</p>
           ) : filtered.length === 0 ? (
             <p className="text-gray-500 text-center py-8">
               Nu am găsit rezultate pentru &quot;{query}&quot;.
@@ -249,30 +259,21 @@ export default function Students() {
                         {s.name}
                       </td>
                       <td className="py-3 pr-4 text-gray-600">{s.email}</td>
-                      {isAdmin && <td className="py-3 pr-4 text-gray-600">{s.status}</td>}
+                      {isAdmin && <td className="py-3 pr-4 text-gray-600">{toStudentStatus(s.status)}</td>}
                       {isAdmin && (
                         <td className="py-3 flex flex-wrap gap-2">
                           {activeTab === "Neconfirmați" ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => handleConfirm(s.id)}
-                                className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700"
-                              >
-                                Confirmă
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleReject(s.id)}
-                                className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
-                              >
-                                Respinge
-                              </button>
-                            </>
+                            <button
+                              type="button"
+                              onClick={() => handleConfirm(s)}
+                              className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700"
+                            >
+                              Confirmă
+                            </button>
                           ) : (
                             <button
                               type="button"
-                              onClick={() => handleDeactivate(s.id)}
+                              onClick={() => handleDeactivate(s)}
                               className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
                             >
                               Dezactivează

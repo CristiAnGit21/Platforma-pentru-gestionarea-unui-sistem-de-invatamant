@@ -1,12 +1,16 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import loginImg from "../assets/designarena_image_imvn6gn3.png";
+import { AxiosError } from "axios";
+import { useApi } from "../providers/AxiosProvider";
 
 const SignUp = () => {
     const navigate = useNavigate();
+    const api = useApi();
 
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
+    const [requestedRole, setRequestedRole] = useState<0 | 1>(0);
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -14,10 +18,30 @@ const SignUp = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
-    const handleSignUp = () => {
+    const getApiErrorMessage = (error: unknown): string => {
+        if (!(error instanceof AxiosError)) {
+            return "Nu s-a putut crea contul.";
+        }
+
+        const payload = error.response?.data as
+            | { message?: string; errors?: Record<string, string[]> }
+            | undefined;
+
+        if (payload?.message) return payload.message;
+        if (payload?.errors) {
+            const firstErrorGroup = Object.values(payload.errors)[0];
+            if (Array.isArray(firstErrorGroup) && firstErrorGroup.length > 0) {
+                return firstErrorGroup[0];
+            }
+        }
+
+        return error.message;
+    };
+
+    const handleSignUp = async () => {
         setError("");
 
-        if (!fullName || !email || !password || !confirmPassword) {
+        if (!fullName.trim() || !email.trim() || !password || !confirmPassword) {
             setError("Te rugăm să completezi toate câmpurile.");
             return;
         }
@@ -32,15 +56,37 @@ const SignUp = () => {
             return;
         }
 
-        setIsLoading(true);
+        const nameParts = fullName
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+        if (nameParts.length === 0) {
+            setError("Numele complet este obligatoriu.");
+            return;
+        }
 
-        setTimeout(() => {
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(" ").trim() || "Utilizator";
+
+        setIsLoading(true);
+        try {
+            await api.post("/User", {
+                firstName,
+                lastName,
+                email: email.trim(),
+                role: Number(requestedRole),
+                status: Number(0),
+                password,
+            });
             setIsLoading(false);
             setIsSuccess(true);
             setTimeout(() => {
                 navigate("/login");
             }, 2000);
-        }, 1500);
+        } catch (error) {
+            setError(getApiErrorMessage(error));
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -84,6 +130,17 @@ const SignUp = () => {
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all placeholder:text-gray-300 text-sm"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-semibold text-sm mb-1">Rol solicitat</label>
+                                <select
+                                    value={requestedRole}
+                                    onChange={(e) => setRequestedRole(Number(e.target.value) as 0 | 1)}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none transition-all text-sm bg-white"
+                                >
+                                    <option value={0}>Student</option>
+                                    <option value={1}>Profesor</option>
+                                </select>
                             </div>
 
                             <div>
