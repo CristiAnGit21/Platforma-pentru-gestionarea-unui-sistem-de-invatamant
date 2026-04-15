@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StudyPlatform.DataAccessLayer.Context;
+using StudyPlatform.Domain.Entities;
 using StudyPlatform.Domain.Models.User;
 using StudyPlatform.Domain.Entities.Enums; // S-ar putea să fie .Enums sau .Entities.Enums depinde de folder
 
@@ -10,28 +11,56 @@ public class UserActions
 {
     public bool CreateUser(UserCreateDto dto)
     {
-        // 'using' garantează că DbContext-ul este închis corect după SaveChanges
         using (var context = new PlatformDbContext())
         {
+            if (string.IsNullOrWhiteSpace(dto.FirstName))
+            {
+                throw new ArgumentException("Prenumele este obligatoriu.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.LastName))
+            {
+                throw new ArgumentException("Numele este obligatoriu.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Email))
+            {
+                throw new ArgumentException("Email-ul este obligatoriu.");
+            }
+
+            var normalizedEmail = dto.Email.Trim().ToLowerInvariant();
+            var alreadyExists = context.Users.Any(x => x.Email.ToLower() == normalizedEmail);
+            if (alreadyExists)
+            {
+                throw new InvalidOperationException("Există deja un utilizator cu acest email.");
+            }
+
+            var user = new UserEntity
+            {
+                FirstName = dto.FirstName.Trim(),
+                LastName = dto.LastName.Trim(),
+                Email = dto.Email.Trim(),
+                Password = dto.Password, // Mapare parolă
+                Role = dto.Role,
+                Status = dto.Status == 0 ? UserStatus.Pending : dto.Status // Implicit Status = Pending dacă lipsește (0)
+            };
+
             try
             {
-                var user = new UserEntity
-                {
-                    // Id nu este setat aici; baza de date îl generează automat
-                    FirstName = dto.FirstName.Trim(),
-                    LastName = dto.LastName.Trim(),
-                    Email = dto.Email.Trim(),
-                    Role = dto.Role // Folosește tipul Enum
-                };
-
                 context.Users.Add(user);
                 return context.SaveChanges() > 0;
             }
             catch (Exception ex)
             {
-                // Gestionarea erorilor în try-catch previne crash-ul aplicației
-                Console.WriteLine($"Eroare la creare: {ex.Message}");
-                return false;
+                // Logare Erori Bază de Date:
+                Console.WriteLine("Eroare la salvarea în baza de date:");
+                Console.WriteLine(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine("Inner Exception:");
+                    Console.WriteLine(ex.InnerException.Message);
+                }
+                throw; // Rethrow to be caught by UserLogic
             }
         }
     }
@@ -49,6 +78,7 @@ public class UserActions
                 user.LastName = dto.LastName.Trim();
                 user.Email = dto.Email.Trim();
                 user.Role = dto.Role;
+                user.Status = dto.Status;
 
                 context.Users.Update(user);
                 return context.SaveChanges() > 0;
@@ -97,7 +127,8 @@ public class UserActions
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     Email = user.Email,
-                    Role = user.Role
+                    Role = user.Role,
+                    Status = user.Status
                 };
             }
             catch (Exception)
@@ -121,7 +152,8 @@ public class UserActions
                         FirstName = x.FirstName,
                         LastName = x.LastName,
                         Email = x.Email,
-                        Role = x.Role
+                        Role = x.Role,
+                        Status = x.Status
                     }).ToList();
             }
             catch (Exception)
@@ -146,7 +178,8 @@ public class UserActions
                         FirstName = x.FirstName,
                         LastName = x.LastName,
                         Email = x.Email,
-                        Role = x.Role
+                        Role = x.Role,
+                        Status = x.Status
                     }).ToList();
             }
             catch (Exception)

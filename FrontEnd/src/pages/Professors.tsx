@@ -1,83 +1,106 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { devGet, devSet } from "../Utils/devStorage";
+import { AxiosError } from "axios";
+import { useApi } from "../providers/AxiosProvider";
 
-const PROFESSORS_KEY = "utm_professors_v1";
-
-type ProfessorStatus = "UNCONFIRMED" | "ACTIVE";
+type UserStatus = "UNCONFIRMED" | "ACTIVE";
 
 type Professor = {
     id: string;
+    firstName: string;
+    lastName: string;
     name: string;
     email: string;
-    role: string;
-    status: ProfessorStatus;
+    role: number | string;
+    status: number | string;
 };
 
-function toProfessorStatus(v: unknown): ProfessorStatus {
-    const s = String(v ?? "UNCONFIRMED").trim().toUpperCase();
-    return s === "ACTIVE" ? "ACTIVE" : "UNCONFIRMED";
-}
-
-type RawProfessor = {
-    id?: unknown;
-    name?: unknown;
-    fullName?: unknown;
-    email?: unknown;
-    role?: unknown;
-    status?: unknown;
+type ApiEnvelope<T> = {
+    data?: T;
 };
 
-function loadProfessors(): Professor[] {
-    const raw = devGet<unknown[]>(PROFESSORS_KEY, []);
-    if (!Array.isArray(raw)) return [];
-
-    return (raw as RawProfessor[])
-        .map(
-            (s): Professor => ({
-                id: String(s.id ?? ""),
-                name: String(s.name ?? s.fullName ?? ""),
-                email: String(s.email ?? ""),
-                role: String(s.role ?? "Profesor"),
-                status: toProfessorStatus(s.status),
-            })
-        )
-        .filter((s) => Boolean(s.id) && Boolean(s.email));
+function parseApiData<T>(payload: unknown): T {
+    const maybeEnvelope = payload as ApiEnvelope<T>;
+    if (maybeEnvelope?.data !== undefined) return maybeEnvelope.data;
+    return payload as T;
 }
 
-/** Persist a professor list and return it (for use in setState callbacks). */
-function saveProfessors(professors: Professor[]): Professor[] {
-    devSet(PROFESSORS_KEY, professors);
-    return professors;
+function normalizeRole(role: number | string): "Student" | "Profesor" | "Admin" {
+    if (typeof role === "number") {
+        if (role === 0) return "Student";
+        if (role === 1) return "Profesor";
+        return "Admin";
+    }
+
+    const value = String(role).toLowerCase();
+    if (value === "student") return "Student";
+    if (value === "professor" || value === "profesor") return "Profesor";
+    return "Admin";
+}
+
+function normalizeStatus(status: number | string): UserStatus {
+    if (typeof status === "number") return status === 1 ? "ACTIVE" : "UNCONFIRMED";
+    const normalized = String(status).trim().toLowerCase();
+    if (normalized === "1" || normalized === "active") return "ACTIVE";
+    return "UNCONFIRMED";
 }
 
 export default function Professors() {
+    const api = useApi();
     const [professors, setProfessors] = useState<Professor[]>([]);
+    const [message, setMessage] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<"Neconfirmați" | "Activi">(
         "Neconfirmați"
     );
     const [query, setQuery] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    const syncFromStorage = useCallback(() => {
-        const loaded = loadProfessors();
-        setProfessors(loaded);
-    }, []);
+    const fetchProfessors = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await api.get("/User");
+            const allUsers = parseApiData<Professor[]>(response.data);
+            const list = Array.isArray(allUsers) ? allUsers : [];
+            console.log("Date primite de la server:", list);
+            setProfessors(
+                list
+                    .filter((p) => normalizeRole(p.role) === "Profesor")
+                    .map((p) => ({
+                        ...p,
+                        name: `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim() || p.email,
+                    }))
+            );
+        } catch (error) {
+            const errText =
+                error instanceof AxiosError
+                    ? error.response?.data?.message ?? error.message
+                    : "Nu s-au putut încărca profesorii.";
+            setMessage(errText);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [api]);
 
     useEffect(() => {
-        syncFromStorage();
-    }, [syncFromStorage]);
-
-    useEffect(() => {
-        const onFocus = () => syncFromStorage();
-        window.addEventListener("focus", onFocus);
-        return () => window.removeEventListener("focus", onFocus);
-    }, [syncFromStorage]);
+        void fetchProfessors();
+    }, [fetchProfessors]);
 
     const unconfirmed = useMemo(
-        () => professors.filter((p) => p.status === "UNCONFIRMED"),
+        () =>
+            professors.filter(
+                (p) =>
+                    normalizeRole(p.role) === "Profesor" &&
+                    normalizeStatus(p.status) === "UNCONFIRMED"
+            ),
         [professors]
     );
     const active = useMemo(
-        () => professors.filter((p) => p.status === "ACTIVE"),
+        // Tab-ul Profesori: role === 1 și status === 1 (ACTIVE)
+        () =>
+            professors.filter(
+                (p) =>
+                    normalizeRole(p.role) === "Profesor" &&
+                    normalizeStatus(p.status) === "ACTIVE"
+            ),
         [professors]
     );
 
@@ -93,29 +116,32 @@ export default function Professors() {
                     p.email.toLowerCase().includes(q)
             );
 
-    const handleConfirm = (id: string) => {
-        setProfessors((prev) => {
-            const next = prev.map((p) =>
-                p.id === id ? { ...p, status: "ACTIVE" as ProfessorStatus } : p
-            );
-            return saveProfessors(next);
-        });
+    const setStatus = async (professor: Professor, status: 0 | 1) => {
+        try {
+            await api.put(`/User/${professor.id}`, {
+                id: professor.id,
+                firstName: professor.firstName,
+                lastName: professor.lastName,
+                email: professor.email,
+                role: 1,
+                status,
+            });
+            await fetchProfessors();
+        } catch (error) {
+            const errText =
+                error instanceof AxiosError
+                    ? error.response?.data?.message ?? error.message
+                    : "Nu s-a putut actualiza profesorul.";
+            setMessage(errText);
+        }
     };
 
-    const handleReject = (id: string) => {
-        setProfessors((prev) => {
-            const next = prev.filter((p) => p.id !== id);
-            return saveProfessors(next);
-        });
+    const handleConfirm = (professor: Professor) => {
+        void setStatus(professor, 1);
     };
 
-    const handleDeactivate = (id: string) => {
-        setProfessors((prev) => {
-            const next = prev.map((p) =>
-                p.id === id ? { ...p, status: "UNCONFIRMED" as ProfessorStatus } : p
-            );
-            return saveProfessors(next);
-        });
+    const handleDeactivate = (professor: Professor) => {
+        void setStatus(professor, 0);
     };
 
     const emptyListMessage =
@@ -131,9 +157,14 @@ export default function Professors() {
                         Profesori
                     </h1>
                     <p className="text-gray-500 mt-2">
-                        Gestionare profesori și conturi (front-only)
+                        Gestionare profesori și conturi
                     </p>
                 </div>
+                {message && (
+                    <div className="mb-4 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg p-3">
+                        {message}
+                    </div>
+                )}
 
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                     <div className="flex flex-col gap-4 mb-4">
@@ -171,10 +202,10 @@ export default function Professors() {
 
                             <button
                                 type="button"
-                                onClick={syncFromStorage}
+                                onClick={() => void fetchProfessors()}
                                 className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50"
                             >
-                                Reîncarcă din storage
+                                Reîncarcă din server
                             </button>
                         </div>
 
@@ -186,6 +217,8 @@ export default function Professors() {
 
                     {currentList.length === 0 ? (
                         <p className="text-gray-500 text-center py-8">{emptyListMessage}</p>
+                    ) : isLoading ? (
+                        <p className="text-gray-500 text-center py-8">Se încarcă profesorii...</p>
                     ) : filtered.length === 0 ? (
                         <p className="text-gray-500 text-center py-8">
                             Nu am găsit rezultate pentru &quot;{query}&quot;.
@@ -217,29 +250,20 @@ export default function Professors() {
                                                 {p.name}
                                             </td>
                                             <td className="py-3 pr-4 text-gray-600">{p.email}</td>
-                                            <td className="py-3 pr-4 text-gray-600">{p.status}</td>
+                                            <td className="py-3 pr-4 text-gray-600">{normalizeStatus(p.status)}</td>
                                             <td className="py-3 flex flex-wrap gap-2">
                                                 {activeTab === "Neconfirmați" ? (
-                                                    <>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleConfirm(p.id)}
-                                                            className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700"
-                                                        >
-                                                            Confirmă
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleReject(p.id)}
-                                                            className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
-                                                        >
-                                                            Respinge
-                                                        </button>
-                                                    </>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleConfirm(p)}
+                                                        className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700"
+                                                    >
+                                                        Confirmă
+                                                    </button>
                                                 ) : (
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleDeactivate(p.id)}
+                                                        onClick={() => handleDeactivate(p)}
                                                         className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
                                                     >
                                                         Dezactivează

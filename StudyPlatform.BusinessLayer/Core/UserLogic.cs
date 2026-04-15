@@ -19,6 +19,15 @@ public class UserLogic : UserActions, IUserLogic
                 Message = "Prenumele și Email-ul sunt câmpuri obligatorii." 
             };
         }
+        
+        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+        {
+            return new ServiceResponse
+            {
+                IsSuccess = false,
+                Message = "Parola este obligatorie și trebuie să aibă cel puțin 6 caractere."
+            };
+        }
 
         try
         {
