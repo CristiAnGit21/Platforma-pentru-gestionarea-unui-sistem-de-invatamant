@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import loginImg from "../assets/designarena_image_imvn6gn3.png";
-import { mockLogin } from "../auth/mockAuth";
 import { setAuthSession } from "../auth/storage";
+import type { AuthSession } from "../auth/types";
+
+const API_BASE_URL = "http://localhost:5298/api";
 
 const LogIn = () => {
     const [email, setEmail] = useState("");
@@ -16,9 +19,24 @@ const LogIn = () => {
         setIsLoading(true);
 
         try {
-            const session = await mockLogin(email, password);
+            const response = await axios.post(
+                `${API_BASE_URL}/login`,
+                { credential: email, password },
+                { withCredentials: true }
+            );
+
+            const data = response.data;
+            const session: AuthSession = {
+                token: "cookie-session",
+                user: {
+                    id: data.userId,
+                    name: data.name,
+                    email: data.email,
+                    role: data.role,
+                },
+            };
+
             setAuthSession(session);
-            localStorage.setItem("auth", "true");
 
             if (session.user.role === "ADMIN") {
                 window.location.assign("/admin/dashboard");
@@ -27,8 +45,13 @@ const LogIn = () => {
             } else {
                 window.location.assign("/student/dashboard");
             }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Email sau parolă incorectă");
+        } catch (err: unknown) {
+            const axiosErr = err as { response?: { data?: { statusMsg?: string } }; code?: string };
+            if (!axiosErr.response) {
+                setError("Serverul nu răspunde. Verifică că backend-ul este pornit.");
+            } else {
+                setError(axiosErr.response.data?.statusMsg ?? "Email sau parolă incorectă.");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -95,7 +118,6 @@ const LogIn = () => {
                 </div>
 
                 <div className="hidden md:flex md:w-3/5 bg-[#fefefc] relative items-center justify-center overflow-hidden">
-
                     <img
                         src={loginImg}
                         alt="Ilustrație autentificare"

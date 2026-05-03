@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\StudyPlatform.DataAccessLayer\StudyPlatform.DataAccessLayer.csproj" />
       <ProjectReference Include="..\StudyPlatform.Domain\StudyPlatform.Domain.csproj" />
+      <ProjectReference Include="..\StudyPlatform.Helpers\StudyPlatform.Helpers.csproj" />
     </ItemGroup>
 
 </Project>

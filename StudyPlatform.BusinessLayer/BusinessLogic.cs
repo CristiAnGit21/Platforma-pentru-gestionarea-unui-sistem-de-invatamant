@@ -5,6 +5,7 @@ namespace StudyPlatform.BusinessLayer;
 
 public class BusinessLogic
 {
+    public ISession GetSessionBL() => new SessionBL();
     public IUserLogic UserLogic() => new UserLogic();
     public IGroupLogic GroupLogic() => new GroupLogic();
     public ISubjectLogic SubjectLogic() => new SubjectLogic();

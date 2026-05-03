@@ -7,6 +7,7 @@ namespace StudyPlatform.DataAccessLayer.Context;
 public class PlatformDbContext : DbContext
 {
     public DbSet<UserEntity> Users { get; set; }
+    public DbSet<SessionEntity> Sessions { get; set; }
     public DbSet<GroupEntity> Groups { get; set; }
     public DbSet<SubjectEntity> Subjects { get; set; }
     public DbSet<GradeEntity> Grades { get; set; }

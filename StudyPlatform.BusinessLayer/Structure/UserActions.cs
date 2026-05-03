@@ -2,7 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using StudyPlatform.DataAccessLayer.Context;
 using StudyPlatform.Domain.Entities;
 using StudyPlatform.Domain.Models.User;
-using StudyPlatform.Domain.Entities.Enums; // S-ar putea să fie .Enums sau .Entities.Enums depinde de folder
+using StudyPlatform.Domain.Entities.Enums;
+using StudyPlatform.Helpers;
 
 
 namespace StudyPlatform.BusinessLayer.Structure;
@@ -40,7 +41,7 @@ public class UserActions
                 FirstName = dto.FirstName.Trim(),
                 LastName = dto.LastName.Trim(),
                 Email = dto.Email.Trim(),
-                Password = dto.Password, // Mapare parolă
+                Password = LoginHelper.HashGen(dto.Password),
                 Role = dto.Role,
                 Status = dto.Status == 0 ? UserStatus.Pending : dto.Status // Implicit Status = Pending dacă lipsește (0)
             };
