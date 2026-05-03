@@ -11,4 +11,6 @@ public class UserEntity
     public string Password { get; set; }
     public UserRole Role { get; set; }
     public UserStatus Status { get; set; }
+    public string? LastIp { get; set; }
+    public DateTime? LastLogin { get; set; }
 }

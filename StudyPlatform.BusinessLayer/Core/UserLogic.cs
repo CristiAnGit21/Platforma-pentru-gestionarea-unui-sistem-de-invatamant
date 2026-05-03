@@ -39,9 +39,10 @@ public class UserLogic : UserActions, IUserLogic
                 Message = res ? "Utilizator creat cu succes." : "Eroare tehnică la salvarea în baza de date." 
             };
         }
-        catch (Exception ex) 
-        { 
-            return new ServiceResponse { IsSuccess = false, Message = ex.Message }; 
+        catch (Exception ex)
+        {
+            var detail = ex.InnerException?.Message ?? ex.Message;
+            return new ServiceResponse { IsSuccess = false, Message = detail };
         }
     }
 
