@@ -4,9 +4,7 @@ import {
     Clock, MapPin, GraduationCap, CheckCircle2, ClipboardCheck,
     TrendingUp, BarChart3, AlertTriangle, FileText, Calendar
 } from 'lucide-react';
-
-// ══════════════════  Mock Data  ══════════════════
-const PROFESSOR_NAME = 'Dr. Popescu';
+import { getAuthSession } from '../../auth/storage';
 
 const QUICK_CARDS = [
     {
@@ -87,9 +85,10 @@ const STATS = [
     { label: 'Note Acordate', value: 127, max: 200, color: 'bg-blue-500', icon: TrendingUp },
 ];
 
-// ══════════════════  Component  ══════════════════
 const ProfesorDashboard = () => {
     const navigate = useNavigate();
+    const session = getAuthSession();
+    const professorName = session?.user.name ?? 'Profesor';
     const today = new Date();
     const dateStr = today.toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -98,7 +97,7 @@ const ProfesorDashboard = () => {
             {/* Header / Greeting */}
             <header className="mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-                    Bună ziua, {PROFESSOR_NAME}! 👋
+                    Bună ziua, {professorName}! 👋
                 </h1>
                 <p className="text-gray-500 font-medium text-sm mt-1 flex items-center gap-1.5">
                     <Calendar size={14} />

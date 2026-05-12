@@ -38,7 +38,11 @@ function buildApiClient(): AxiosInstance {
             if (error.response?.status === 401) {
                 localStorage.removeItem("token");
                 clearAuthSession();
-                window.location.replace("/login");
+                window.location.replace("/401");
+            }
+
+            if (error.response?.status === 403) {
+                window.location.replace("/403");
             }
 
             return Promise.reject(error);
