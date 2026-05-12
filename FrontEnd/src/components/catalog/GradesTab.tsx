@@ -5,14 +5,16 @@ import { getAverage, STATUS_CFG } from './catalogTypes';
 
 interface GradesTabProps {
     students: CatalogStudent[];
+    subjects?: { id: string; name: string }[];
     onAddGrade: (studentId: string, grade: Omit<Grade, 'id'>) => void;
     onDeleteGrade: (studentId: string, gradeId: string) => void;
 }
 
-const GradesTab = ({ students, onAddGrade, onDeleteGrade }: GradesTabProps) => {
+const GradesTab = ({ students, subjects = [], onAddGrade, onDeleteGrade }: GradesTabProps) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [addingFor, setAddingFor] = useState<string | null>(null);
     const [newGradeValue, setNewGradeValue] = useState('');
+    const [selectedSubjectId, setSelectedSubjectId] = useState('');
     const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
 
     const filtered = students.filter(s =>
@@ -22,10 +24,12 @@ const GradesTab = ({ students, onAddGrade, onDeleteGrade }: GradesTabProps) => {
     const handleAddGrade = (studentId: string) => {
         const val = parseInt(newGradeValue);
         if (val < 1 || val > 10 || isNaN(val)) return;
+        const subj = subjects.find(s => s.id === selectedSubjectId);
         onAddGrade(studentId, {
             value: val,
             date: new Date().toISOString().split('T')[0],
-            subject: 'Programare Web',
+            subject: subj?.name ?? 'Disciplina',
+            subjectId: selectedSubjectId || undefined,
         });
         setNewGradeValue('');
         setAddingFor(null);
@@ -121,7 +125,19 @@ const GradesTab = ({ students, onAddGrade, onDeleteGrade }: GradesTabProps) => {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         {addingFor === s.id ? (
-                                            <div className="flex items-center gap-1 justify-center">
+                                            <div className="flex flex-wrap items-center gap-1 justify-center">
+                                                {subjects.length > 0 && (
+                                                    <select
+                                                        value={selectedSubjectId}
+                                                        onChange={e => setSelectedSubjectId(e.target.value)}
+                                                        className="px-2 py-1 rounded-lg border border-purple-200 text-xs focus:ring-2 focus:ring-purple-300 outline-none"
+                                                    >
+                                                        <option value="">Materie</option>
+                                                        {subjects.map(sub => (
+                                                            <option key={sub.id} value={sub.id}>{sub.name}</option>
+                                                        ))}
+                                                    </select>
+                                                )}
                                                 <input
                                                     type="number"
                                                     min="1"

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.BusinessLayer.Interfaces;
 using StudyPlatform.Domain.Models.Event;
@@ -16,9 +17,11 @@ public class EventController : ControllerBase
         _eventLogic = bl.EventLogic();
     }
     [HttpGet]
+    [Authorize]
     public IActionResult GetAll() => Ok(_eventLogic.GetEventList());
 
     [HttpGet("{id}")]
+    [Authorize]
     public IActionResult GetById(Guid id)
     {
         var result = _eventLogic.GetEventById(id);
@@ -26,6 +29,7 @@ public class EventController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN,PROFESOR")]
     public IActionResult Create([FromBody] EventCreateDto dto)
     {
         var result = _eventLogic.CreateEvent(dto);
@@ -33,6 +37,7 @@ public class EventController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN,PROFESOR")]
     public IActionResult Update(Guid id, [FromBody] EventInfoDto dto)
     {
         var result = _eventLogic.UpdateEvent(id, dto);
@@ -40,6 +45,7 @@ public class EventController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Delete(Guid id)
     {
         var result = _eventLogic.DeleteEvent(id);
