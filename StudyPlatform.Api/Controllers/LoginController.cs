@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.Domain.Entities.User;
 using StudyPlatform.Domain.Models.User;
@@ -17,6 +18,7 @@ public class LoginController : ControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public IActionResult Login([FromBody] UserLoginDto dto)
     {
         var data = new ULoginData

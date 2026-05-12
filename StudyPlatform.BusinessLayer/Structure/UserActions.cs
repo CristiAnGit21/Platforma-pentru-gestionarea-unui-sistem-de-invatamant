@@ -43,7 +43,8 @@ public class UserActions
                 Email = dto.Email.Trim(),
                 Password = LoginHelper.HashGen(dto.Password),
                 Role = dto.Role,
-                Status = dto.Status == 0 ? UserStatus.Pending : dto.Status // Implicit Status = Pending dacă lipsește (0)
+                Status = dto.Status == 0 ? UserStatus.Pending : dto.Status,
+                GroupId = dto.GroupId
             };
 
             try
@@ -66,13 +67,37 @@ public class UserActions
         }
     }
 
+    public UserEntity RegisterUser(UserCreateDto dto)
+    {
+        using var context = new PlatformDbContext();
+
+        var normalizedEmail = dto.Email.Trim().ToLowerInvariant();
+        if (context.Users.Any(x => x.Email.ToLower() == normalizedEmail))
+            throw new InvalidOperationException("Există deja un utilizator cu acest email.");
+
+        var user = new UserEntity
+        {
+            FirstName = dto.FirstName.Trim(),
+            LastName = dto.LastName.Trim(),
+            Email = dto.Email.Trim(),
+            Password = LoginHelper.HashGen(dto.Password),
+            Role = dto.Role,
+            Status = UserStatus.Pending,
+            GroupId = dto.GroupId
+        };
+
+        context.Users.Add(user);
+        context.SaveChanges();
+        return user;
+    }
+
     public bool UpdateUser(Guid id, UserInfoDto dto)
     {
         using (var context = new PlatformDbContext())
         {
             try
             {
-                var user = context.Users.FirstOrDefault(x => x.Id == id);
+                var user = context.Users.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
                 if (user is null) return false;
 
                 user.FirstName = dto.FirstName.Trim();
@@ -80,6 +105,7 @@ public class UserActions
                 user.Email = dto.Email.Trim();
                 user.Role = dto.Role;
                 user.Status = dto.Status;
+                user.GroupId = dto.GroupId;
 
                 context.Users.Update(user);
                 return context.SaveChanges() > 0;
@@ -98,10 +124,10 @@ public class UserActions
         {
             try
             {
-                var user = context.Users.FirstOrDefault(x => x.Id == id);
+                var user = context.Users.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
                 if (user is null) return false;
 
-                context.Users.Remove(user);
+                user.IsDeleted = true;
                 return context.SaveChanges() > 0;
             }
             catch (Exception ex)
@@ -119,7 +145,7 @@ public class UserActions
             try
             {
                 // AsNoTracking îmbunătățește performanța pentru operații de citire
-                var user = context.Users.AsNoTracking().FirstOrDefault(x => x.Id == id);
+                var user = context.Users.AsNoTracking().FirstOrDefault(x => x.Id == id && !x.IsDeleted);
                 if (user is null) return null;
 
                 return new UserInfoDto
@@ -129,7 +155,8 @@ public class UserActions
                     LastName = user.LastName,
                     Email = user.Email,
                     Role = user.Role,
-                    Status = user.Status
+                    Status = user.Status,
+                    GroupId = user.GroupId
                 };
             }
             catch (Exception)
@@ -147,6 +174,7 @@ public class UserActions
             {
                 return context.Users
                     .AsNoTracking()
+                    .Where(x => !x.IsDeleted)
                     .Select(x => new UserInfoDto
                     {
                         Id = x.Id,
@@ -154,7 +182,8 @@ public class UserActions
                         LastName = x.LastName,
                         Email = x.Email,
                         Role = x.Role,
-                        Status = x.Status
+                        Status = x.Status,
+                        GroupId = x.GroupId
                     }).ToList();
             }
             catch (Exception)
@@ -172,7 +201,7 @@ public class UserActions
             {
                 return context.Users
                     .AsNoTracking()
-                    .Where(x => x.Role == role)
+                    .Where(x => x.Role == role && !x.IsDeleted)
                     .Select(x => new UserInfoDto
                     {
                         Id = x.Id,
@@ -180,7 +209,35 @@ public class UserActions
                         LastName = x.LastName,
                         Email = x.Email,
                         Role = x.Role,
-                        Status = x.Status
+                        Status = x.Status,
+                        GroupId = x.GroupId
+                    }).ToList();
+            }
+            catch (Exception)
+            {
+                return new List<UserInfoDto>();
+            }
+        }
+    }
+
+    public List<UserInfoDto> GetUsersByGroup(Guid groupId)
+    {
+        using (var context = new PlatformDbContext())
+        {
+            try
+            {
+                return context.Users
+                    .AsNoTracking()
+                    .Where(x => x.GroupId == groupId && !x.IsDeleted)
+                    .Select(x => new UserInfoDto
+                    {
+                        Id = x.Id,
+                        FirstName = x.FirstName,
+                        LastName = x.LastName,
+                        Email = x.Email,
+                        Role = x.Role,
+                        Status = x.Status,
+                        GroupId = x.GroupId
                     }).ToList();
             }
             catch (Exception)
