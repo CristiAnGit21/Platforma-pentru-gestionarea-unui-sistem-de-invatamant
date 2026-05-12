@@ -42,6 +42,10 @@ namespace StudyPlatform.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("SubjectId");
+
                     b.ToTable("Attendances");
                 });
 
@@ -84,6 +88,8 @@ namespace StudyPlatform.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProfessorId");
+
                     b.ToTable("Events");
                 });
 
@@ -106,6 +112,10 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("SubjectId");
 
                     b.ToTable("Grades");
                 });
@@ -165,6 +175,8 @@ namespace StudyPlatform.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Reports");
                 });
 
@@ -219,6 +231,12 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LastIp")
                         .HasColumnType("text");
 
@@ -241,7 +259,63 @@ namespace StudyPlatform.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GroupId");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.AttendanceEntity", b =>
+                {
+                    b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudyPlatform.Domain.Entities.SubjectEntity", null)
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.EventEntity", b =>
+                {
+                    b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.GradeEntity", b =>
+                {
+                    b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudyPlatform.Domain.Entities.SubjectEntity", null)
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.ReportEntity", b =>
+                {
+                    b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.UserEntity", b =>
+                {
+                    b.HasOne("StudyPlatform.Domain.Entities.GroupEntity", null)
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 #pragma warning restore 612, 618
         }

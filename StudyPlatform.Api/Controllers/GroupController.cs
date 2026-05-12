@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.BusinessLayer.Interfaces;
 using StudyPlatform.Domain.Models.Group;
@@ -17,9 +18,11 @@ public class GroupController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public IActionResult GetAll() => Ok(_groupLogic.GetGroupList());
 
     [HttpGet("{id}")]
+    [Authorize]
     public IActionResult GetById(Guid id)
     {
         var result = _groupLogic.GetGroupById(id);
@@ -27,6 +30,7 @@ public class GroupController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Create([FromBody] GroupCreateDto dto)
     {
         var result = _groupLogic.CreateGroup(dto);
@@ -34,6 +38,7 @@ public class GroupController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Update(Guid id, [FromBody] GroupInfoDto dto)
     {
         var result = _groupLogic.UpdateGroup(id, dto);
@@ -41,6 +46,7 @@ public class GroupController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Delete(Guid id)
     {
         var result = _groupLogic.DeleteGroup(id);

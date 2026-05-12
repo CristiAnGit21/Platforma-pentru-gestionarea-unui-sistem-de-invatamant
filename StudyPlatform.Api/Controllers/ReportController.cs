@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.BusinessLayer.Interfaces;
 using StudyPlatform.Domain.Models.Report;
@@ -17,9 +18,11 @@ public class ReportController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "ADMIN,PROFESOR")]
     public IActionResult GetAll() => Ok(_reportLogic.GetReportList());
 
     [HttpGet("{id}")]
+    [Authorize]
     public IActionResult GetById(Guid id)
     {
         var result = _reportLogic.GetReportById(id);
@@ -27,6 +30,7 @@ public class ReportController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public IActionResult Create([FromBody] ReportCreateDto dto)
     {
         var result = _reportLogic.CreateReport(dto);
@@ -34,6 +38,7 @@ public class ReportController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Update(Guid id, [FromBody] ReportInfoDto dto)
     {
         var result = _reportLogic.UpdateReport(id, dto);
@@ -41,6 +46,7 @@ public class ReportController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Delete(Guid id)
     {
         var result = _reportLogic.DeleteReport(id);
