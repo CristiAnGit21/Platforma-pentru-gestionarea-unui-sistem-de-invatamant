@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StudyPlatform.DataAccessLayer.Context;
@@ -11,9 +12,11 @@ using StudyPlatform.DataAccessLayer.Context;
 namespace StudyPlatform.DataAccessLayer.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    partial class PlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260511132400_Phase2_RelationshipsAndSoftDelete")]
+    partial class Phase2_RelationshipsAndSoftDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,9 +234,6 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("GroupId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -258,8 +258,6 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
 
                     b.ToTable("Users");
                 });
@@ -307,14 +305,6 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                     b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-                });
-
-            modelBuilder.Entity("StudyPlatform.Domain.Entities.UserEntity", b =>
-                {
-                    b.HasOne("StudyPlatform.Domain.Entities.GroupEntity", null)
-                        .WithMany()
-                        .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 #pragma warning restore 612, 618

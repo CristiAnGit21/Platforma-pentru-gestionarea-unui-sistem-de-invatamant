@@ -3,6 +3,8 @@ import Students from "../pages/Students";
 import Schedule from "../pages/Schedule";
 import Notifications from "../pages/Notifications";
 import PageNotFound from '../pages/404-page';
+import Unauthorized from "../pages/Unauthorized";
+import Forbidden from "../pages/Forbidden";
 import FinancialStatus from "../pages/FinancialStatus.tsx";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ProfesorDashboard from "../pages/dashboard/ProfesorDashboard";
@@ -171,6 +173,8 @@ function AppRoutes() {
                     </RoleGuard>
                 }
             />
+            <Route path="/401" element={<Unauthorized />} />
+            <Route path="/403" element={<Forbidden />} />
             <Route path="*" element={<RoleCatchAll />} />
         </Routes>
     );

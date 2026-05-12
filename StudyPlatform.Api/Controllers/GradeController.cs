@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.BusinessLayer.Interfaces;
 using StudyPlatform.Domain.Models.Grade;
@@ -17,9 +18,11 @@ public class GradeController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public IActionResult GetAll() => Ok(_gradeLogic.GetGradeList());
 
     [HttpGet("{id}")]
+    [Authorize]
     public IActionResult GetById(Guid id)
     {
         var result = _gradeLogic.GetGradeById(id);
@@ -27,9 +30,11 @@ public class GradeController : ControllerBase
     }
 
     [HttpGet("student/{studentId}")]
+    [Authorize]
     public IActionResult GetByStudent(Guid studentId) => Ok(_gradeLogic.GetGradesByStudent(studentId));
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN,PROFESOR")]
     public IActionResult Create([FromBody] GradeCreateDto dto)
     {
         var result = _gradeLogic.CreateGrade(dto);
@@ -37,6 +42,7 @@ public class GradeController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN,PROFESOR")]
     public IActionResult Update(Guid id, [FromBody] GradeInfoDto dto)
     {
         var result = _gradeLogic.UpdateGrade(id, dto);
@@ -44,6 +50,7 @@ public class GradeController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Delete(Guid id)
     {
         var result = _gradeLogic.DeleteGrade(id);

@@ -13,4 +13,6 @@ public class UserEntity
     public UserStatus Status { get; set; }
     public string? LastIp { get; set; }
     public DateTime? LastLogin { get; set; }
+    public bool IsDeleted { get; set; } = false;
+    public Guid? GroupId { get; set; }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.BusinessLayer.Interfaces;
 using StudyPlatform.Domain.Models.Subject;
@@ -17,9 +18,11 @@ public class SubjectController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public IActionResult GetAll() => Ok(_subjectLogic.GetSubjectList());
 
     [HttpGet("{id}")]
+    [Authorize]
     public IActionResult GetById(Guid id)
     {
         var result = _subjectLogic.GetSubjectById(id);
@@ -27,6 +30,7 @@ public class SubjectController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Create([FromBody] SubjectCreateDto dto)
     {
         var result = _subjectLogic.CreateSubject(dto);
@@ -34,6 +38,7 @@ public class SubjectController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Update(Guid id, [FromBody] SubjectInfoDto dto)
     {
         var result = _subjectLogic.UpdateSubject(id, dto);
@@ -41,6 +46,7 @@ public class SubjectController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Delete(Guid id)
     {
         var result = _subjectLogic.DeleteSubject(id);

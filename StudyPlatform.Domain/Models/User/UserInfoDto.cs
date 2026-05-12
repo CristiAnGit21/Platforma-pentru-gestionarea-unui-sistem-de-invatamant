@@ -9,5 +9,6 @@ public class UserInfoDto
     public string Email { get; set; }
     public UserRole Role { get; set; }
     public UserStatus Status { get; set; }
+    public Guid? GroupId { get; set; }
     public string FullName => $"{FirstName} {LastName}";
 }

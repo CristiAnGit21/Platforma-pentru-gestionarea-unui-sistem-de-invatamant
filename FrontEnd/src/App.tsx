@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import LogIn from "./pages/LogIn";
-import SignUp from "./pages/SignUp"; 
+import SignUp from "./pages/SignUp";
+import Unauthorized from "./pages/Unauthorized";
+import Forbidden from "./pages/Forbidden";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import NavBar from "./components/NavBar";
@@ -25,6 +27,8 @@ function App() {
                 <Routes>
                     <Route path="/login" element={<LogIn />} />
                     <Route path="/signup" element={<SignUp />} />
+                    <Route path="/401" element={<Unauthorized />} />
+                    <Route path="/403" element={<Forbidden />} />
                     <Route path="*" element={<Navigate to="/login" />} />
                 </Routes>
             )}

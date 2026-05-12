@@ -1,4 +1,5 @@
 ﻿using StudyPlatform.BusinessLayer.Interfaces;
+using StudyPlatform.BusinessLayer.Services;
 using StudyPlatform.BusinessLayer.Structure;
 using StudyPlatform.Domain.Entities.Enums;
 using StudyPlatform.Domain.Models.Service;
@@ -8,7 +9,41 @@ namespace StudyPlatform.BusinessLayer.Core;
 
 public class UserLogic : UserActions, IUserLogic
 {
-   
+    public ULoginResp RegisterUser(UserCreateDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.FirstName) || string.IsNullOrWhiteSpace(dto.Email))
+            return new ULoginResp { Status = false, StatusMsg = "Prenumele și Email-ul sunt câmpuri obligatorii." };
+
+        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+            return new ULoginResp { Status = false, StatusMsg = "Parola este obligatorie și trebuie să aibă cel puțin 6 caractere." };
+
+        try
+        {
+            var user = base.RegisterUser(dto);
+            var roleStr = user.Role switch
+            {
+                UserRole.Admin    => "ADMIN",
+                UserRole.Professor => "PROFESOR",
+                _                 => "STUDENT"
+            };
+            var token = TokenService.GenerateToken(user.Id.ToString(), $"{user.FirstName} {user.LastName}", user.Email, roleStr);
+            return new ULoginResp
+            {
+                Status    = true,
+                Token     = token,
+                UserId    = user.Id.ToString(),
+                Name      = $"{user.FirstName} {user.LastName}",
+                Email     = user.Email,
+                Role      = roleStr,
+                StatusMsg = "Cont creat cu succes. Așteptați aprobarea unui administrator."
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ULoginResp { Status = false, StatusMsg = ex.InnerException?.Message ?? ex.Message };
+        }
+    }
+
     public ServiceResponse CreateUser(UserCreateDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.FirstName) || string.IsNullOrWhiteSpace(dto.Email))
@@ -112,6 +147,21 @@ public class UserLogic : UserActions, IUserLogic
                 IsSuccess = true,
                 Data = users,
                 Message = $"Au fost găsiți {users.Count} utilizatori cu rolul {role}."
+            };
+        }
+        catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
+    }
+
+    public ServiceResponse GetUsersByGroup(Guid groupId)
+    {
+        try
+        {
+            var users = base.GetUsersByGroup(groupId);
+            return new ServiceResponse
+            {
+                IsSuccess = true,
+                Data = users,
+                Message = $"Au fost găsiți {users.Count} utilizatori în grupa {groupId}."
             };
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }

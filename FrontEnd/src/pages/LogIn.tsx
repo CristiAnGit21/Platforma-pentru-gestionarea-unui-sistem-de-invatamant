@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import loginImg from "../assets/designarena_image_imvn6gn3.png";
 import { setAuthSession } from "../auth/storage";
+import { decodeToken } from "../auth/jwt";
 import type { AuthSession } from "../auth/types";
 
 const API_BASE_URL = "http://localhost:5298/api";
@@ -26,13 +27,20 @@ const LogIn = () => {
             );
 
             const data = response.data;
+
+            const decoded = decodeToken(data.token);
+            if (!decoded) {
+                setError("Token invalid primit de la server.");
+                return;
+            }
+
             const session: AuthSession = {
-                token: "cookie-session",
+                token: data.token,
                 user: {
-                    id: data.userId,
-                    name: data.name,
-                    email: data.email,
-                    role: data.role,
+                    id:    decoded.id,
+                    name:  decoded.name,
+                    email: decoded.email,
+                    role:  decoded.role,
                 },
             };
 

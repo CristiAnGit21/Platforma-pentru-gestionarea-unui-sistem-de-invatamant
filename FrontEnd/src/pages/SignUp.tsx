@@ -70,7 +70,7 @@ const SignUp = () => {
 
         setIsLoading(true);
         try {
-            await api.post("/User", {
+            await api.post("/user/register", {
                 firstName,
                 lastName,
                 email: email.trim(),

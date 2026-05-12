@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using StudyPlatform.BusinessLayer.Interfaces;
+using StudyPlatform.BusinessLayer.Services;
 using StudyPlatform.BusinessLayer.Structure;
 using StudyPlatform.DataAccessLayer.Context;
 using StudyPlatform.Domain.Entities;
@@ -18,13 +19,11 @@ public class SessionBL : UserActions, ISession
         if (!emailAttr.IsValid(data.Credential))
             return new ULoginResp { Status = false, StatusMsg = "Adresa de email nu este validă." };
 
-        var hashedPassword = LoginHelper.HashGen(data.Password);
-
         using var context = new PlatformDbContext();
         var user = context.Users.FirstOrDefault(u =>
-            u.Email == data.Credential && u.Password == hashedPassword);
+            u.Email == data.Credential && !u.IsDeleted);
 
-        if (user == null)
+        if (user == null || !LoginHelper.Verify(data.Password, user.Password))
             return new ULoginResp { Status = false, StatusMsg = "Email sau parolă incorectă." };
 
         if (user.Status == UserStatus.Pending)
@@ -44,9 +43,12 @@ public class SessionBL : UserActions, ISession
             _ => "STUDENT"
         };
 
+        var token = TokenService.GenerateToken(user.Id.ToString(), $"{user.FirstName} {user.LastName}", user.Email, roleStr);
+
         return new ULoginResp
         {
             Status = true,
+            Token = token,
             UserId = user.Id.ToString(),
             Name = $"{user.FirstName} {user.LastName}",
             Email = user.Email,
