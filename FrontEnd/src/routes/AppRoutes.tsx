@@ -62,6 +62,14 @@ function AppRoutes() {
                 }
             />
             <Route
+                path="/admin/notificari"
+                element={
+                    <RoleGuard allowedRoles={["ADMIN"]}>
+                        <Notifications />
+                    </RoleGuard>
+                }
+            />
+            <Route
                 path="/profesor/notificari"
                 element={
                     <RoleGuard allowedRoles={["PROFESOR"]}>

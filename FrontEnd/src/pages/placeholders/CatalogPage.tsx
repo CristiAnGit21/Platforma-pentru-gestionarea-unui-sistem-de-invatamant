@@ -107,13 +107,17 @@ const CatalogPage = () => {
     const selectedGroup = groups.find(g => g.id === selectedGroupId);
 
     const handleAddGrade = async (studentId: string, grade: Omit<Grade, 'id'>) => {
-        if (!grade.subjectId) return;
+        const subjectId = grade.subjectId ?? subjects[0]?.id;
+        if (!subjectId) {
+            console.error('Nu există materii disponibile pentru a adăuga nota.');
+            return;
+        }
         try {
             await api.post('/grade', {
                 value: grade.value,
                 date: new Date(grade.date).toISOString(),
                 studentId,
-                subjectId: grade.subjectId,
+                subjectId,
             });
             await loadStudentsForGroup(selectedGroupId);
         } catch (err) {
@@ -178,6 +182,7 @@ const CatalogPage = () => {
                         groups={groups}
                         selectedGroupId={selectedGroupId}
                         onSelectGroup={setSelectedGroupId}
+                        selectedGroupStudents={catalogStudents}
                     />
                 </div>
 

@@ -13,4 +13,5 @@ public class BusinessLogic
     public IAttendanceLogic AttendanceLogic() => new AttendanceLogic();
     public IReportLogic ReportLogic() => new ReportLogic();
     public IEventLogic EventLogic() => new EventLogic();
+    public INotificationLogic NotificationLogic() => new NotificationLogic();
 }

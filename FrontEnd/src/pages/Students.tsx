@@ -15,6 +15,12 @@ type Student = {
   status: number | string;
 };
 
+type Group = {
+  id: string;
+  name: string;
+  year: number;
+};
+
 type ApiEnvelope<T> = {
   data?: T;
 };
@@ -48,6 +54,8 @@ function toStudentStatus(v: number | string): StudentStatus {
 export default function Students() {
   const api = useApi();
   const [students, setStudents] = useState<Student[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"Neconfirmați" | "Activi">(
     "Neconfirmați"
@@ -89,6 +97,13 @@ export default function Students() {
     void fetchStudents();
   }, [fetchStudents]);
 
+  useEffect(() => {
+    api.get("/group").then((res) => {
+      const list = (res.data?.data ?? res.data ?? []) as Group[];
+      setGroups(list);
+    }).catch(() => {});
+  }, [api]);
+
   const unconfirmed = useMemo(
     () =>
       students.filter(
@@ -99,7 +114,6 @@ export default function Students() {
     [students]
   );
   const active = useMemo(
-    // Tab-ul Studenți: role === 0 și status === 1 (ACTIVE)
     () =>
       students.filter(
         (s) =>
@@ -123,7 +137,7 @@ export default function Students() {
           s.email.toLowerCase().includes(q)
       );
 
-  const setStatus = async (student: Student, status: 0 | 1) => {
+  const setStatus = async (student: Student, status: 0 | 1, groupId?: string) => {
     try {
       await api.put(`/User/${student.id}`, {
         id: student.id,
@@ -132,6 +146,7 @@ export default function Students() {
         email: student.email,
         role: 0,
         status,
+        groupId: groupId ?? null,
       });
       await fetchStudents();
     } catch (error) {
@@ -143,7 +158,14 @@ export default function Students() {
     }
   };
 
-  const handleConfirm = (student: Student) => void setStatus(student, 1);
+  const handleConfirm = (student: Student) => {
+    const groupId = selectedGroupId[student.id];
+    if (!groupId) {
+      setMessage("Selectați o grupă înainte de a confirma studentul.");
+      return;
+    }
+    void setStatus(student, 1, groupId);
+  };
   const handleDeactivate = (student: Student) => void setStatus(student, 0);
 
   const emptyListMessage = isAdmin
@@ -246,6 +268,9 @@ export default function Students() {
                         Status
                       </th>
                     )}
+                    {isAdmin && activeTab === "Neconfirmați" && (
+                      <th className="pb-3 pr-4 font-semibold text-gray-800">Grupă</th>
+                    )}
                     {isAdmin && <th className="pb-3 font-semibold text-gray-800">Acțiuni</th>}
                   </tr>
                 </thead>
@@ -260,6 +285,22 @@ export default function Students() {
                       </td>
                       <td className="py-3 pr-4 text-gray-600">{s.email}</td>
                       {isAdmin && <td className="py-3 pr-4 text-gray-600">{toStudentStatus(s.status)}</td>}
+                      {isAdmin && activeTab === "Neconfirmați" && (
+                        <td className="py-3 pr-4">
+                          <select
+                            value={selectedGroupId[s.id] ?? ""}
+                            onChange={(e) =>
+                              setSelectedGroupId((prev) => ({ ...prev, [s.id]: e.target.value }))
+                            }
+                            className="px-2 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-700 focus:ring-2 focus:ring-violet-300 outline-none"
+                          >
+                            <option value="">— selectează grupa —</option>
+                            {groups.map((g) => (
+                              <option key={g.id} value={g.id}>{g.name}</option>
+                            ))}
+                          </select>
+                        </td>
+                      )}
                       {isAdmin && (
                         <td className="py-3 flex flex-wrap gap-2">
                           {activeTab === "Neconfirmați" ? (

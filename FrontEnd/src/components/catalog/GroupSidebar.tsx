@@ -1,22 +1,29 @@
 import { Users, BarChart3, CheckCircle2 } from 'lucide-react';
-import type { Group } from './catalogTypes';
+import type { CatalogStudent } from './catalogTypes';
 import { getAverage, getAttendancePercent } from './catalogTypes';
 
-interface GroupSidebarProps {
-    groups: Group[];
-    selectedGroupId: string;
-    onSelectGroup: (id: string) => void;
+interface GroupInfo {
+    id: string;
+    name: string;
+    year: number;
 }
 
-const GroupSidebar = ({ groups, selectedGroupId, onSelectGroup }: GroupSidebarProps) => {
+interface GroupSidebarProps {
+    groups: GroupInfo[];
+    selectedGroupId: string;
+    onSelectGroup: (id: string) => void;
+    selectedGroupStudents?: CatalogStudent[];
+}
+
+const GroupSidebar = ({ groups, selectedGroupId, onSelectGroup, selectedGroupStudents = [] }: GroupSidebarProps) => {
     const selectedGroup = groups.find(g => g.id === selectedGroupId);
 
-    // Stats for selected group
-    const allGrades = selectedGroup?.students.flatMap(s => s.grades) ?? [];
-    const allAttendance = selectedGroup?.students.flatMap(s => s.attendance) ?? [];
+    // Stats for selected group — use the students loaded by the parent
+    const allGrades = selectedGroupStudents.flatMap(s => s.grades);
+    const allAttendance = selectedGroupStudents.flatMap(s => s.attendance);
     const avgGrade = getAverage(allGrades);
     const avgAttendance = getAttendancePercent(allAttendance);
-    const activeCount = selectedGroup?.students.filter(s => s.status === 'ACTIVE').length ?? 0;
+    const activeCount = selectedGroupStudents.filter(s => s.status === 'ACTIVE').length;
 
     return (
         <div className="space-y-4">
@@ -39,7 +46,7 @@ const GroupSidebar = ({ groups, selectedGroupId, onSelectGroup }: GroupSidebarPr
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className={`text-sm font-bold ${isSelected ? 'text-purple-700' : 'text-gray-700'}`}>{g.name}</p>
-                                    <p className="text-[10px] text-gray-400">Anul {g.year} · {g.students.length} studenți</p>
+                                    <p className="text-[10px] text-gray-400">Anul {g.year}{g.id === selectedGroupId ? ` · ${selectedGroupStudents.length} studenți` : ''}</p>
                                 </div>
                                 {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />}
                             </button>
@@ -59,7 +66,7 @@ const GroupSidebar = ({ groups, selectedGroupId, onSelectGroup }: GroupSidebarPr
                             <div className="p-2 rounded-lg bg-violet-50 text-violet-500"><Users size={14} /></div>
                             <div>
                                 <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Studenți</p>
-                                <p className="text-sm font-bold text-gray-800">{selectedGroup.students.length} total · <span className="text-green-600">{activeCount} activi</span></p>
+                                <p className="text-sm font-bold text-gray-800">{selectedGroupStudents.length} total · <span className="text-green-600">{activeCount} activi</span></p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">

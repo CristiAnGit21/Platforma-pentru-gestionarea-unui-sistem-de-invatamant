@@ -28,9 +28,14 @@ public class GroupActions
             if (group is null) return false;
             group.Name = dto.Name.Trim();
             group.Year = dto.Year;
-            return context.SaveChanges() > 0;
+            var result = context.SaveChanges() > 0;
+            return result;
         }
-        catch (Exception ex) { Console.WriteLine($"Eroare la update grupă: {ex.Message}"); return false; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Eroare la update grupă: {ex.Message}"); 
+        }
+            return false;
     }
 
     public bool DeleteGroup(Guid id)

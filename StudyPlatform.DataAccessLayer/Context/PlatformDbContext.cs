@@ -15,6 +15,7 @@ public class PlatformDbContext : DbContext
     public DbSet<AttendanceEntity> Attendances { get; set; }
     public DbSet<ReportEntity> Reports { get; set; }
     public DbSet<EventEntity> Events { get; set; }
+    public DbSet<NotificationEntity> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

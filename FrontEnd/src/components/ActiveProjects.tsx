@@ -24,32 +24,6 @@ interface FormState {
     colorIdx: number;
 }
 
-const initialProjects: Project[] = [
-    {
-        title: "Aplicație E-Commerce",
-        course: "Programare Web",
-        deadline: "2 zile rămase",
-        progress: 75,
-        color: "bg-blue-500",
-        bg: "bg-blue-100",
-    },
-    {
-        title: "Normalizare Bază de Date",
-        course: "Baze de Date",
-        deadline: "5 zile rămase",
-        progress: 40,
-        color: "bg-violet-500",
-        bg: "bg-violet-100",
-    },
-    {
-        title: "Algoritm Dijkstra",
-        course: "Structuri de Date",
-        deadline: "1 săptămână",
-        progress: 15,
-        color: "bg-amber-500",
-        bg: "bg-amber-100",
-    },
-];
 
 const COLOR_OPTIONS: ColorOption[] = [
     { color: "bg-blue-500", bg: "bg-blue-100", label: "Albastru" },
@@ -61,7 +35,7 @@ const COLOR_OPTIONS: ColorOption[] = [
 ];
 
 const ActiveProjects = () => {
-    const [projects, setProjects] = useState<Project[]>(initialProjects);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [form, setForm] = useState<FormState>({
         title: "",
