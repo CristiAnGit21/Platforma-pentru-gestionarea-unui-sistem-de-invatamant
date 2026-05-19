@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { AxiosError } from "axios";
+import { Trash2 } from "lucide-react";
 import { useApi } from "../../providers/AxiosProvider";
 
 type PendingUser = { id: string; name: string; email: string; requestedRole: Role };
@@ -100,15 +101,63 @@ const AdminDashboard = () => {
 
     const [activeProfessors, setActiveProfessors] = useState<Professor[]>([]);
     const [allActiveStudents, setAllActiveStudents] = useState<PendingUser[]>([]);
+    const [allBackendUsers, setAllBackendUsers] = useState<BackendUser[]>([]);
 
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [editingGroup, setEditingGroup] = useState<Group | null>(null);
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
     const [groupStudentMap, setGroupStudentMap] = useState<Record<string, string[]>>({});
 
+    const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
+    const [notifForm, setNotifForm] = useState({ title: '', message: '', type: 'general' });
+    const [sendingNotif, setSendingNotif] = useState(false);
+
+    const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
+    const [newSubjectName, setNewSubjectName] = useState('');
+    const [addingSubject, setAddingSubject] = useState(false);
+
     const showTemporaryMessage = (text: string) => {
         setMessage(text);
         window.setTimeout(() => setMessage(null), 3000);
+    };
+
+    const fetchSubjects = useCallback(async () => {
+        try {
+            const res = await api.get('/subject');
+            const list: { id: string; name: string }[] = res.data?.data ?? res.data ?? [];
+            setSubjects(Array.isArray(list) ? list : []);
+        } catch {
+            setSubjects([]);
+        }
+    }, [api]);
+
+    useEffect(() => { void fetchSubjects(); }, [fetchSubjects]);
+
+    const handleAddSubject = async () => {
+        if (!newSubjectName.trim()) return;
+        setAddingSubject(true);
+        try {
+            await api.post('/subject', { name: newSubjectName.trim() });
+            setNewSubjectName('');
+            await fetchSubjects();
+            showTemporaryMessage(`Materia "${newSubjectName.trim()}" a fost adăugată.`);
+        } catch (error) {
+            const msg = error instanceof AxiosError ? error.response?.data?.message ?? error.message : 'Eroare la adăugarea materiei.';
+            showTemporaryMessage(msg);
+        } finally {
+            setAddingSubject(false);
+        }
+    };
+
+    const handleDeleteSubject = async (id: string, name: string) => {
+        try {
+            await api.delete(`/subject/${id}`);
+            await fetchSubjects();
+            showTemporaryMessage(`Materia "${name}" a fost ștearsă.`);
+        } catch (error) {
+            const msg = error instanceof AxiosError ? error.response?.data?.message ?? error.message : 'Eroare la ștergerea materiei.';
+            showTemporaryMessage(msg);
+        }
     };
 
     const fetchDashboardData = useCallback(async () => {
@@ -151,6 +200,7 @@ const AdminDashboard = () => {
             setPendingUsers(nextPendingUsers);
             setActiveProfessors(nextActiveProfessors);
             setAllActiveStudents(nextActiveStudents);
+            setAllBackendUsers(safeUsers);
             setGroups(
                 safeGroups.map((group) => ({
                     id: group.id,
@@ -221,9 +271,15 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleOpenAssignModal = (group: Group) => {
+    const handleOpenAssignModal = async (group: Group) => {
         setEditingGroup(group);
-        setSelectedStudentIds(group.studentIds || []);
+        try {
+            const res = await api.get(`/user/group/${group.id}`);
+            const members = parseApiData<BackendUser[]>(res.data) ?? [];
+            setSelectedStudentIds(Array.isArray(members) ? members.map(m => m.id) : []);
+        } catch {
+            setSelectedStudentIds([]);
+        }
         setIsAssignModalOpen(true);
     };
 
@@ -231,29 +287,44 @@ const AdminDashboard = () => {
         if (!editingGroup) return;
 
         try {
-            try {
-                await api.put(`/Group/${editingGroup.id}/students`, {
-                    studentIds: selectedStudentIds,
-                });
-            } catch {
-                try {
-                    await api.post(`/Group/${editingGroup.id}/students`, {
-                        studentIds: selectedStudentIds,
-                    });
-                } catch {
-                    await api.put(`/Group/${editingGroup.id}`, {
-                        id: editingGroup.id,
-                        name: editingGroup.name,
-                        year: editingGroup.year,
-                        studentIds: selectedStudentIds,
-                    });
-                }
-            }
+            // Membrii actuali din server
+            const currentRes = await api.get(`/user/group/${editingGroup.id}`);
+            const currentMembers = parseApiData<BackendUser[]>(currentRes.data) ?? [];
+            const safeCurrentMembers = Array.isArray(currentMembers) ? currentMembers : [];
+            const currentIds = safeCurrentMembers.map(m => m.id);
 
-            setGroupStudentMap((prev) => ({
-                ...prev,
-                [editingGroup.id]: selectedStudentIds,
-            }));
+            const toAdd = selectedStudentIds.filter(id => !currentIds.includes(id));
+            const toRemove = currentIds.filter(id => !selectedStudentIds.includes(id));
+
+            await Promise.all([
+                ...toAdd.map(async (studentId) => {
+                    const student = allBackendUsers.find(u => u.id === studentId);
+                    if (!student) return;
+                    await api.put(`/User/${studentId}`, {
+                        id: studentId,
+                        firstName: student.firstName,
+                        lastName: student.lastName,
+                        email: student.email,
+                        role: 0,
+                        status: 1,
+                        groupId: editingGroup.id,
+                    });
+                }),
+                ...toRemove.map(async (studentId) => {
+                    const member = safeCurrentMembers.find(m => m.id === studentId);
+                    if (!member) return;
+                    await api.put(`/User/${studentId}`, {
+                        id: studentId,
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        email: member.email,
+                        role: 0,
+                        status: 1,
+                        groupId: null,
+                    });
+                }),
+            ]);
+
             await fetchDashboardData();
             setIsAssignModalOpen(false);
             setEditingGroup(null);
@@ -265,6 +336,28 @@ const AdminDashboard = () => {
                     ? error.response?.data?.message ?? error.message
                     : "Nu s-au putut salva asignările studenților.";
             showTemporaryMessage(messageText);
+        }
+    };
+
+    const handleSendNotification = async () => {
+        if (!notifForm.title.trim() || !notifForm.message.trim()) return;
+        setSendingNotif(true);
+        try {
+            await api.post('/notification', {
+                title: notifForm.title.trim(),
+                message: notifForm.message.trim(),
+                type: notifForm.type,
+            });
+            setIsNotifModalOpen(false);
+            setNotifForm({ title: '', message: '', type: 'general' });
+            showTemporaryMessage('Notificarea a fost trimisă tuturor utilizatorilor.');
+        } catch (error) {
+            const msg = error instanceof AxiosError
+                ? error.response?.data?.message ?? error.message
+                : 'Eroare la trimiterea notificării.';
+            showTemporaryMessage(msg);
+        } finally {
+            setSendingNotif(false);
         }
     };
 
@@ -414,7 +507,142 @@ const AdminDashboard = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Secțiunea Materii */}
+                <div className="mt-8 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-800">Materii</h2>
+                            <p className="text-gray-500 text-sm mt-1">Materiile sunt folosite de profesori pentru a adăuga note în catalog.</p>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 mb-4">
+                        <input
+                            type="text"
+                            placeholder="Nume materie (ex: Matematică)"
+                            value={newSubjectName}
+                            onChange={e => setNewSubjectName(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && void handleAddSubject()}
+                            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none transition-all text-sm"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => void handleAddSubject()}
+                            disabled={addingSubject || !newSubjectName.trim()}
+                            className="px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {addingSubject ? 'Se adaugă...' : '+ Adaugă'}
+                        </button>
+                    </div>
+
+                    {subjects.length === 0 ? (
+                        <p className="text-gray-400 text-sm text-center py-4 border-2 border-dashed border-gray-100 rounded-xl">
+                            Nu există materii. Adaugă prima materie mai sus.
+                        </p>
+                    ) : (
+                        <div className="flex flex-wrap gap-2">
+                            {subjects.map(s => (
+                                <span key={s.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 text-sm font-medium">
+                                    {s.name}
+                                    <button
+                                        type="button"
+                                        onClick={() => void handleDeleteSubject(s.id, s.name)}
+                                        className="text-violet-300 hover:text-red-500 transition-colors"
+                                        title="Șterge materia"
+                                    >
+                                        <Trash2 size={13} />
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Secțiunea Notificări */}
+                <div className="mt-8 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-800">Notificări</h2>
+                            <p className="text-gray-500 text-sm mt-1">Trimite notificări vizibile tuturor utilizatorilor platformei.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsNotifModalOpen(true)}
+                            className="px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors flex items-center gap-2"
+                        >
+                            <span>+</span>
+                            Trimite notificare
+                        </button>
+                    </div>
+                </div>
             </div>
+
+            {/* Modal Notificare */}
+            {isNotifModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                        <div className="p-6 border-b border-gray-100">
+                            <h3 className="text-xl font-bold text-gray-800">Trimite notificare</h3>
+                            <p className="text-gray-500 text-sm mt-1">Notificarea va fi vizibilă tuturor utilizatorilor.</p>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Titlu</label>
+                                <input
+                                    type="text"
+                                    placeholder="ex: Sesiune de examene"
+                                    value={notifForm.title}
+                                    onChange={e => setNotifForm({ ...notifForm, title: e.target.value })}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Mesaj</label>
+                                <textarea
+                                    rows={4}
+                                    placeholder="Detalii despre notificare..."
+                                    value={notifForm.message}
+                                    onChange={e => setNotifForm({ ...notifForm, message: e.target.value })}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none transition-all resize-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Tip</label>
+                                <select
+                                    value={notifForm.type}
+                                    onChange={e => setNotifForm({ ...notifForm, type: e.target.value })}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none bg-white transition-all"
+                                >
+                                    <option value="general">General</option>
+                                    <option value="alerta">Alertă</option>
+                                    <option value="orar">Orar</option>
+                                    <option value="financiar">Financiar</option>
+                                    <option value="nota">Notă</option>
+                                    <option value="absenta">Absență</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="p-6 bg-gray-50 flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => { setIsNotifModalOpen(false); setNotifForm({ title: '', message: '', type: 'general' }); }}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-white transition-all"
+                            >
+                                Anulează
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSendNotification}
+                                disabled={sendingNotif || !notifForm.title.trim() || !notifForm.message.trim()}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition-all shadow-md shadow-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {sendingNotif ? 'Se trimite...' : 'Trimite'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal pentru Creare Grupă */}
             {isGroupModalOpen && (

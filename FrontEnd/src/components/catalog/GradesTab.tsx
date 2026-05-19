@@ -32,6 +32,7 @@ const GradesTab = ({ students, subjects = [], onAddGrade, onDeleteGrade }: Grade
             subjectId: selectedSubjectId || undefined,
         });
         setNewGradeValue('');
+        setSelectedSubjectId(subjects[0]?.id ?? '');
         setAddingFor(null);
     };
 
@@ -157,7 +158,7 @@ const GradesTab = ({ students, subjects = [], onAddGrade, onDeleteGrade }: Grade
                                                 >✕</button>
                                             </div>
                                         ) : (
-                                            <button onClick={() => setAddingFor(s.id)}
+                                            <button onClick={() => { setAddingFor(s.id); setSelectedSubjectId(subjects[0]?.id ?? ''); }}
                                                 className="p-1.5 rounded-lg text-gray-300 hover:text-purple-500 hover:bg-purple-50 transition-all"
                                                 title="Adaugă notă"
                                             >

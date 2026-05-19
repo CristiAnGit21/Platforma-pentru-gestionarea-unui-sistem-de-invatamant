@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-Content \"C:\\\\Users\\\\Ludmila\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-Ludmila-Desktop-Platforma-pentru-gestionarea-unui-sistem-de-invatamant\\\\4e49ebae-269c-46cf-a947-9f9680fb798a\\\\tasks\\\\b1fwhhjaa.output\" -Wait)",
+      "Bash(Select-String -Pattern \"Local:|ready|error|Error\")"
+    ]
+  }
+}
