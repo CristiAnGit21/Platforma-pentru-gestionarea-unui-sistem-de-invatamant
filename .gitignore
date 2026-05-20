@@ -91,6 +91,7 @@ appsettings.json
 tsconfig.tsbuildinfo
 .ncurc.js
 knip.jsonc
+.claude/
 
 *.tsbuildinfo
 ._*
