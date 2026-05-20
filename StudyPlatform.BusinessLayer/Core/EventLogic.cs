@@ -34,7 +34,7 @@ public class EventLogic : EventActions, IEventLogic
         try
         {
             var res = base.DeleteEvent(id);
-            return new ServiceResponse { IsSuccess = res, Message = res ? "Eveniment șters." : "Evenimentul nu există." };
+            return new ServiceResponse { IsSuccess = res, IsNotFound = !res, Message = res ? "Eveniment șters." : "Evenimentul nu există." };
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
     }

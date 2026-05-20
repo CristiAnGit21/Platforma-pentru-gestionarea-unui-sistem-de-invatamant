@@ -43,7 +43,8 @@ public class UserController : ControllerBase
     public IActionResult Delete(Guid id)
     {
         var result = _userLogic.DeleteUser(id);
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        if (result.IsSuccess) return Ok(result);
+        return result.IsNotFound ? NotFound(result) : BadRequest(result);
     }
 
     [HttpGet("{id}")]

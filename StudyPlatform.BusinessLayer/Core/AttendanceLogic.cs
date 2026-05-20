@@ -32,7 +32,7 @@ public class AttendanceLogic : AttendanceActions, IAttendanceLogic
         try
         {
             var res = base.DeleteAttendance(id);
-            return new ServiceResponse { IsSuccess = res, Message = res ? "Prezență ștearsă." : "Înregistrarea nu există." };
+            return new ServiceResponse { IsSuccess = res, IsNotFound = !res, Message = res ? "Prezență ștearsă." : "Înregistrarea nu există." };
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
     }

@@ -41,6 +41,7 @@ public class NotificationController : ControllerBase
     public IActionResult Delete(Guid id)
     {
         var result = _logic.Delete(id);
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        if (result.IsSuccess) return Ok(result);
+        return result.IsNotFound ? NotFound(result) : BadRequest(result);
     }
 }

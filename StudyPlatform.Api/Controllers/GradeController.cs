@@ -54,6 +54,7 @@ public class GradeController : ControllerBase
     public IActionResult Delete(Guid id)
     {
         var result = _gradeLogic.DeleteGrade(id);
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        if (result.IsSuccess) return Ok(result);
+        return result.IsNotFound ? NotFound(result) : BadRequest(result);
     }
 }

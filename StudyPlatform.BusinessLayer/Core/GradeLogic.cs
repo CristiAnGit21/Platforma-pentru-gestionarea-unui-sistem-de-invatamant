@@ -34,7 +34,7 @@ public class GradeLogic : GradeActions, IGradeLogic
         try
         {
             var res = base.DeleteGrade(id);
-            return new ServiceResponse { IsSuccess = res, Message = res ? "Notă ștearsă." : "Nota nu există." };
+            return new ServiceResponse { IsSuccess = res, IsNotFound = !res, Message = res ? "Notă ștearsă." : "Nota nu există." };
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
     }
