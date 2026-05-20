@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AxiosError } from "axios";
+import { FileText, Upload, X, Loader2, CheckCircle2 } from "lucide-react";
 import { getAuthSession } from "../auth/storage";
 import { useApi } from "../providers/AxiosProvider";
 
@@ -66,6 +67,12 @@ export default function Students() {
   const session = getAuthSession();
   const role = session?.user.role;
   const isAdmin = role === "ADMIN";
+
+  const [contractModal, setContractModal] = useState<{ studentId: string; studentName: string } | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [uploadMsg, setUploadMsg] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchStudents = useCallback(async () => {
     setIsLoading(true);
@@ -155,6 +162,45 @@ export default function Students() {
           ? error.response?.data?.message ?? error.message
           : "Nu s-a putut actualiza studentul.";
       setMessage(errText);
+    }
+  };
+
+  const openContractModal = (student: Student) => {
+    setContractModal({ studentId: student.id, studentName: student.name });
+    setSelectedFile(null);
+    setUploadStatus("idle");
+    setUploadMsg("");
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      setUploadMsg("Doar fișiere PDF sunt acceptate.");
+      setUploadStatus("error");
+      return;
+    }
+    setSelectedFile(file);
+    setUploadStatus("idle");
+    setUploadMsg("");
+  };
+
+  const handleUploadContract = async () => {
+    if (!contractModal || !selectedFile) return;
+    setUploadStatus("uploading");
+    try {
+      const formData = new FormData();
+      formData.append("studentId", contractModal.studentId);
+      formData.append("file", selectedFile);
+      await api.post("/contract", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      setUploadStatus("success");
+      setUploadMsg("Contractul a fost încărcat cu succes.");
+    } catch (error) {
+      const msg = error instanceof AxiosError
+        ? error.response?.data?.message ?? error.message
+        : "Eroare la încărcarea contractului.";
+      setUploadStatus("error");
+      setUploadMsg(msg);
     }
   };
 
@@ -312,13 +358,23 @@ export default function Students() {
                               Confirmă
                             </button>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleDeactivate(s)}
-                              className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
-                            >
-                              Dezactivează
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => openContractModal(s)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-colors border border-blue-100"
+                              >
+                                <FileText size={14} />
+                                Contract
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeactivate(s)}
+                                className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                              >
+                                Dezactivează
+                              </button>
+                            </>
                           )}
                         </td>
                       )}
@@ -330,6 +386,79 @@ export default function Students() {
           )}
         </div>
       </div>
+
+      {contractModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <div>
+                <h3 className="text-lg font-bold text-gray-800">Contract de studii</h3>
+                <p className="text-sm text-gray-500 mt-0.5">{contractModal.studentName}</p>
+              </div>
+              <button onClick={() => setContractModal(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all"
+              >
+                <Upload size={28} className="mx-auto text-gray-300 mb-2" />
+                {selectedFile ? (
+                  <div>
+                    <p className="text-sm font-semibold text-blue-700">{selectedFile.name}</p>
+                    <p className="text-xs text-gray-400 mt-1">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-600">Click pentru a selecta PDF</p>
+                    <p className="text-xs text-gray-400 mt-1">Doar fișiere .pdf, max 20 MB</p>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+
+              {uploadStatus === "success" && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 text-green-700 border border-green-200 text-sm font-semibold">
+                  <CheckCircle2 size={16} /> {uploadMsg}
+                </div>
+              )}
+              {uploadStatus === "error" && (
+                <div className="px-4 py-3 rounded-xl bg-red-50 text-red-700 border border-red-200 text-sm font-semibold">
+                  {uploadMsg}
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 bg-gray-50 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setContractModal(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-white transition-all text-sm"
+              >
+                Închide
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleUploadContract()}
+                disabled={!selectedFile || uploadStatus === "uploading" || uploadStatus === "success"}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all shadow-md shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {uploadStatus === "uploading" ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                {uploadStatus === "uploading" ? "Se încarcă..." : "Încarcă contract"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

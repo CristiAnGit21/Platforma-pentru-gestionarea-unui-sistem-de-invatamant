@@ -16,6 +16,7 @@ public class PlatformDbContext : DbContext
     public DbSet<ReportEntity> Reports { get; set; }
     public DbSet<EventEntity> Events { get; set; }
     public DbSet<NotificationEntity> Notifications { get; set; }
+    public DbSet<ContractEntity> Contracts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,6 +61,21 @@ public class PlatformDbContext : DbContext
             .HasOne<UserEntity>()
             .WithMany()
             .HasForeignKey(r => r.UserId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Contract → Student (User) one-to-one
+        modelBuilder.Entity<ContractEntity>()
+            .HasOne<UserEntity>()
+            .WithMany()
+            .HasForeignKey(c => c.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Subject → Professor (User) optional many-to-one
+        modelBuilder.Entity<SubjectEntity>()
+            .HasOne<UserEntity>()
+            .WithMany()
+            .HasForeignKey(s => s.ProfessorId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 

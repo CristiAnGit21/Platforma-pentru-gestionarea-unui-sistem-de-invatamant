@@ -5,11 +5,12 @@ import GroupSidebar from '../../components/catalog/GroupSidebar';
 import GradesTab from '../../components/catalog/GradesTab';
 import AttendanceTab from '../../components/catalog/AttendanceTab';
 import { useApi } from '../../providers/AxiosProvider';
+import { getAuthSession } from '../../auth/storage';
 
 type TabView = 'note' | 'prezenta';
 
 interface GroupInfo { id: string; name: string; year: number; }
-interface SubjectInfo { id: string; name: string; }
+interface SubjectInfo { id: string; name: string; professorId?: string; }
 interface UserInfo { id: string; firstName: string; lastName: string; email: string; status: string; groupId?: string; }
 interface GradeDto { id: string; value: number; date: string; subjectId: string; studentId: string; }
 interface AttendanceDto { id: string; date: string; present: boolean; studentId: string; subjectId: string; }
@@ -20,6 +21,7 @@ function mapStatus(status: string): 'ACTIVE' | 'UNCONFIRMED' {
 
 const CatalogPage = () => {
     const api = useApi();
+    const professorId = getAuthSession()?.user.id;
 
     const [groups, setGroups] = useState<GroupInfo[]>([]);
     const [subjects, setSubjects] = useState<SubjectInfo[]>([]);
@@ -38,7 +40,8 @@ const CatalogPage = () => {
             api.get('/subject'),
         ]).then(([grRes, subRes]) => {
             const groupList: GroupInfo[] = grRes.data?.data ?? grRes.data ?? [];
-            const subjectList: SubjectInfo[] = subRes.data?.data ?? subRes.data ?? [];
+            const allSubjects: SubjectInfo[] = subRes.data?.data ?? subRes.data ?? [];
+            const subjectList = allSubjects.filter(s => s.professorId === professorId);
             setGroups(groupList);
             setSubjects(subjectList);
             if (groupList.length > 0) setSelectedGroupId(groupList[0].id);
@@ -166,6 +169,27 @@ const CatalogPage = () => {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <Loader2 size={24} className="animate-spin text-purple-500" />
+            </div>
+        );
+    }
+
+    if (subjects.length === 0) {
+        return (
+            <div className="p-4 md:p-8 w-full min-h-screen bg-gray-50/50">
+                <header className="mb-8">
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><BookOpen size={22} /></div>
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Catalog</h1>
+                            <p className="text-gray-500 font-medium text-sm">Gestionați notele și prezența studenților.</p>
+                        </div>
+                    </div>
+                </header>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center py-20">
+                    <BookOpen size={40} className="text-gray-200 mb-3" />
+                    <p className="font-bold text-gray-400 text-sm">Nu aveți materii atribuite</p>
+                    <p className="text-xs text-gray-300 mt-1">Contactați administratorul pentru a vi se atribui o materie.</p>
+                </div>
             </div>
         );
     }

@@ -8,7 +8,7 @@ const statsConfig = (stats: StudentStats) => [
     { label: "Media generala", value: stats.average.toFixed(2) },
     { label: "Cursuri azi", value: String(stats.todayCourses) },
     { label: "Notificari noi", value: String(stats.unreadNotifications) },
-    { label: "Datorii (lei)", value: String(stats.debtsLei) },
+    { label: "Absente", value: String(stats.absences) },
 ];
 
 const StatsGrid = ({ stats }: Props) => {

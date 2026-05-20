@@ -1,6 +1,7 @@
 import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import Students from "../pages/Students";
 import Groups from "../pages/Groups";
+import AdminReportsPage from "../pages/AdminReportsPage";
 import Schedule from "../pages/Schedule";
 import Notifications from "../pages/Notifications";
 import PageNotFound from '../pages/404-page';
@@ -75,6 +76,14 @@ function AppRoutes() {
                 element={
                     <RoleGuard allowedRoles={["ADMIN"]}>
                         <Notifications />
+                    </RoleGuard>
+                }
+            />
+            <Route
+                path="/admin/rapoarte"
+                element={
+                    <RoleGuard allowedRoles={["ADMIN"]}>
+                        <AdminReportsPage />
                     </RoleGuard>
                 }
             />
