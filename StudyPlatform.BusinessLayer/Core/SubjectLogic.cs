@@ -34,7 +34,7 @@ public class SubjectLogic : SubjectActions, ISubjectLogic
         try
         {
             var res = base.DeleteSubject(id);
-            return new ServiceResponse { IsSuccess = res, Message = res ? "Materie ștearsă." : "Materia nu există." };
+            return new ServiceResponse { IsSuccess = res, IsNotFound = !res, Message = res ? "Materie ștearsă." : "Materia nu există." };
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
     }

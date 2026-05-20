@@ -50,6 +50,7 @@ public class NotificationLogic : NotificationActions, INotificationLogic
             return new ServiceResponse
             {
                 IsSuccess = ok,
+                IsNotFound = !ok,
                 Message = ok ? "Notificarea a fost ștearsă." : "Notificarea nu a fost găsită."
             };
         }

@@ -50,6 +50,7 @@ public class SubjectController : ControllerBase
     public IActionResult Delete(Guid id)
     {
         var result = _subjectLogic.DeleteSubject(id);
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        if (result.IsSuccess) return Ok(result);
+        return result.IsNotFound ? NotFound(result) : BadRequest(result);
     }
 }

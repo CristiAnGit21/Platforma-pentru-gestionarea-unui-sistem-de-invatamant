@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { BookOpen, GraduationCap, ClipboardCheck, Loader2 } from 'lucide-react';
+import { BookOpen, GraduationCap, ClipboardCheck, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import type { CatalogStudent, Grade } from '../../components/catalog/catalogTypes';
 import GroupSidebar from '../../components/catalog/GroupSidebar';
 import GradesTab from '../../components/catalog/GradesTab';
@@ -30,6 +30,7 @@ const CatalogPage = () => {
     const [loadingInit, setLoadingInit] = useState(true);
     const [loadingStudents, setLoadingStudents] = useState(false);
     const [activeTab, setActiveTab] = useState<TabView>('note');
+    const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
     useEffect(() => {
         Promise.all([
@@ -106,10 +107,15 @@ const CatalogPage = () => {
 
     const selectedGroup = groups.find(g => g.id === selectedGroupId);
 
+    const showToast = (type: 'success' | 'error', message: string) => {
+        setToast({ type, message });
+        setTimeout(() => setToast(null), 3000);
+    };
+
     const handleAddGrade = async (studentId: string, grade: Omit<Grade, 'id'>) => {
         const subjectId = grade.subjectId ?? subjects[0]?.id;
         if (!subjectId) {
-            console.error('Nu există materii disponibile pentru a adăuga nota.');
+            showToast('error', 'Nu există materii disponibile. Adăugați mai întâi o materie.');
             return;
         }
         try {
@@ -119,8 +125,10 @@ const CatalogPage = () => {
                 studentId,
                 subjectId,
             });
+            showToast('success', 'Nota a fost adăugată cu succes.');
             await loadStudentsForGroup(selectedGroupId);
         } catch (err) {
+            showToast('error', 'Eroare la salvarea notei. Încercați din nou.');
             console.error(err);
         }
     };
@@ -164,6 +172,16 @@ const CatalogPage = () => {
 
     return (
         <div className="p-4 md:p-8 w-full min-h-screen bg-gray-50/50">
+            {toast && (
+                <div className={`fixed top-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-semibold transition-all ${
+                    toast.type === 'success'
+                        ? 'bg-green-50 text-green-700 border border-green-200'
+                        : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                    {toast.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                    {toast.message}
+                </div>
+            )}
             <header className="mb-8">
                 <div className="flex items-center gap-3 mb-1">
                     <div className="p-2 rounded-xl bg-purple-100 text-purple-600">

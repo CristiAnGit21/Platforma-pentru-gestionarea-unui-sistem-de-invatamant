@@ -100,10 +100,11 @@ public class UserLogic : UserActions, IUserLogic
         try
         {
             var res = base.DeleteUser(id);
-            return new ServiceResponse 
-            { 
-                IsSuccess = res, 
-                Message = res ? "Utilizator eliminat." : "Eroare: Utilizatorul nu există." 
+            return new ServiceResponse
+            {
+                IsSuccess = res,
+                IsNotFound = !res,
+                Message = res ? "Utilizator eliminat." : "Eroare: Utilizatorul nu există."
             };
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }

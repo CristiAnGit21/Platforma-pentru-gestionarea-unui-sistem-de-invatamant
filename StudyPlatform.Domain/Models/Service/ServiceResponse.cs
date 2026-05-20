@@ -3,8 +3,7 @@
 public class ServiceResponse
 {
     public bool IsSuccess { get; set; }
+    public bool IsNotFound { get; set; }
     public string? Message { get; set; }
     public object? Data { get; set; }
-    
-    //HttpStatusCode
 }

@@ -34,7 +34,7 @@ public class GroupLogic : GroupActions, IGroupLogic
         try
         {
             var res = base.DeleteGroup(id);
-            return new ServiceResponse { IsSuccess = res, Message = res ? "Grupă ștearsă." : "Grupa nu există." };
+            return new ServiceResponse { IsSuccess = res, IsNotFound = !res, Message = res ? "Grupă ștearsă." : "Grupa nu există." };
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
     }
