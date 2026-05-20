@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, MapPin, User, Star, StarOff, Download } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, User, Star, StarOff, Download, Trash2 } from 'lucide-react';
 import type { CalendarEvent } from './calendarTypes';
 import { EVENT_CFG, exportEvent } from './calendarTypes';
 
@@ -7,9 +7,10 @@ interface DayViewProps {
     events: CalendarEvent[];
     savedEvents: Set<string>;
     onToggleSave: (id: string) => void;
+    onDelete?: (id: string) => void;
 }
 
-const DayView = ({ selectedDate, events, savedEvents, onToggleSave }: DayViewProps) => {
+const DayView = ({ selectedDate, events, savedEvents, onToggleSave, onDelete }: DayViewProps) => {
     const sorted = [...events].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
     return (
@@ -34,7 +35,7 @@ const DayView = ({ selectedDate, events, savedEvents, onToggleSave }: DayViewPro
                         const Ic = c.icon;
                         const sav = savedEvents.has(ev.id);
                         return (
-                            <div key={ev.id} className={`flex items-start gap-4 p-4 rounded-2xl border ${c.border} ${c.bg} transition-all hover:shadow-sm`}>
+                            <div key={ev.id} className={`group flex items-start gap-4 p-4 rounded-2xl border ${c.border} ${c.bg} transition-all hover:shadow-sm`}>
                                 <div className={`shrink-0 p-2.5 rounded-xl ${c.bg} ${c.text}`}><Ic size={20} /></div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-2">
@@ -51,6 +52,12 @@ const DayView = ({ selectedDate, events, savedEvents, onToggleSave }: DayViewPro
                                                 className="p-1.5 rounded-lg text-gray-300 hover:text-purple-500 hover:bg-purple-50 transition-colors"
                                                 title="Exportă ca fișier ICS"
                                             ><Download size={16} /></button>
+                                            {onDelete && (
+                                                <button onClick={() => onDelete(ev.id)}
+                                                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                                                    title="Șterge evenimentul"
+                                                ><Trash2 size={16} /></button>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap gap-3 mt-2">

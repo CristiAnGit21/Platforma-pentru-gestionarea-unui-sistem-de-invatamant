@@ -10,7 +10,8 @@ User,
   Bell,
   LogOut,
   Menu,
-  MessageCircleWarning
+  MessageCircleWarning,
+  Users
 } from 'lucide-react';
 import { clearAuthSession, getAuthSession } from "../auth/storage";
 
@@ -20,6 +21,7 @@ const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "STUDENT", NavItem[]> = {
   ADMIN: [
     { page: "Dashboard", path: "/admin/dashboard", icon: <Home size={27} /> },
     { page: "Orar", path: "/admin/orar", icon: <Calendar size={27} /> },
+    { page: "Grupe", path: "/admin/grupe", icon: <Users size={27} /> },
     { page: "Studenți", path: "/admin/studenti", icon: <IdCard size={27} /> },
     { page: "Profesori", path: "/admin/profesori", icon: <User size={27} /> },
     { page: "Notificări", path: "/admin/notificari", icon: <Bell size={27} /> },
@@ -27,6 +29,7 @@ const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "STUDENT", NavItem[]> = {
   PROFESOR: [
     { page: "Dashboard", path: "/profesor/dashboard", icon: <Home size={27} /> },
     { page: "Catalog", path: "/profesor/catalog", icon: <BookOpen size={27} /> },
+    { page: "Orar", path: "/profesor/orar", icon: <Calendar size={27} /> },
     { page: "Notificări", path: "/profesor/notificari", icon: <Bell size={27} /> },
     { page: "Studenți", path: "/profesor/studenti", icon: <IdCard size={27} /> },
     { page: "Raportează o problemă", path: "/profesor/raporteaza", icon: <MessageCircleWarning size={27} /> },

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, Search } from 'lucide-react';
+import { Plus, Trash2, Search, AlertCircle } from 'lucide-react';
 import type { CatalogStudent, Grade } from './catalogTypes';
 import { getAverage, STATUS_CFG } from './catalogTypes';
 
@@ -24,12 +24,13 @@ const GradesTab = ({ students, subjects = [], onAddGrade, onDeleteGrade }: Grade
     const handleAddGrade = (studentId: string) => {
         const val = parseInt(newGradeValue);
         if (val < 1 || val > 10 || isNaN(val)) return;
+        if (!selectedSubjectId) return;
         const subj = subjects.find(s => s.id === selectedSubjectId);
         onAddGrade(studentId, {
             value: val,
             date: new Date().toISOString().split('T')[0],
             subject: subj?.name ?? 'Disciplina',
-            subjectId: selectedSubjectId || undefined,
+            subjectId: selectedSubjectId,
         });
         setNewGradeValue('');
         setSelectedSubjectId(subjects[0]?.id ?? '');
@@ -38,6 +39,12 @@ const GradesTab = ({ students, subjects = [], onAddGrade, onDeleteGrade }: Grade
 
     return (
         <div>
+            {subjects.length === 0 && (
+                <div className="flex items-center gap-2 mx-4 mt-4 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
+                    <AlertCircle size={14} className="shrink-0" />
+                    Nu există materii înregistrate. Adăugați materii înainte de a introduce note.
+                </div>
+            )}
             {/* Search */}
             <div className="p-4 border-b border-gray-100">
                 <div className="relative">
@@ -158,9 +165,11 @@ const GradesTab = ({ students, subjects = [], onAddGrade, onDeleteGrade }: Grade
                                                 >✕</button>
                                             </div>
                                         ) : (
-                                            <button onClick={() => { setAddingFor(s.id); setSelectedSubjectId(subjects[0]?.id ?? ''); }}
-                                                className="p-1.5 rounded-lg text-gray-300 hover:text-purple-500 hover:bg-purple-50 transition-all"
-                                                title="Adaugă notă"
+                                            <button
+                                                onClick={() => { setAddingFor(s.id); setSelectedSubjectId(subjects[0]?.id ?? ''); }}
+                                                disabled={subjects.length === 0}
+                                                className="p-1.5 rounded-lg text-gray-300 hover:text-purple-500 hover:bg-purple-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-300"
+                                                title={subjects.length === 0 ? 'Nu există materii disponibile' : 'Adaugă notă'}
                                             >
                                                 <Plus size={16} />
                                             </button>

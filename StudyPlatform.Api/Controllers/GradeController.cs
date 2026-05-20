@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.BusinessLayer.Interfaces;
@@ -31,7 +32,13 @@ public class GradeController : ControllerBase
 
     [HttpGet("student/{studentId}")]
     [Authorize]
-    public IActionResult GetByStudent(Guid studentId) => Ok(_gradeLogic.GetGradesByStudent(studentId));
+    public IActionResult GetByStudent(Guid studentId)
+    {
+        var callerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (User.IsInRole("STUDENT") && callerId != studentId.ToString())
+            return Forbid();
+        return Ok(_gradeLogic.GetGradesByStudent(studentId));
+    }
 
     [HttpPost]
     [Authorize(Roles = "ADMIN,PROFESOR")]

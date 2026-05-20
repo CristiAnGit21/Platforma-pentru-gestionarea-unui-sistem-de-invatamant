@@ -1,5 +1,6 @@
 import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import Students from "../pages/Students";
+import Groups from "../pages/Groups";
 import Schedule from "../pages/Schedule";
 import Notifications from "../pages/Notifications";
 import PageNotFound from '../pages/404-page';
@@ -62,6 +63,14 @@ function AppRoutes() {
                 }
             />
             <Route
+                path="/profesor/orar"
+                element={
+                    <RoleGuard allowedRoles={["PROFESOR"]}>
+                        <Schedule />
+                    </RoleGuard>
+                }
+            />
+            <Route
                 path="/admin/notificari"
                 element={
                     <RoleGuard allowedRoles={["ADMIN"]}>
@@ -82,6 +91,14 @@ function AppRoutes() {
                 element={
                     <RoleGuard allowedRoles={["STUDENT"]}>
                         <FinancialStatus />
+                    </RoleGuard>
+                }
+            />
+            <Route
+                path="/admin/grupe"
+                element={
+                    <RoleGuard allowedRoles={["ADMIN"]}>
+                        <Groups />
                     </RoleGuard>
                 }
             />
