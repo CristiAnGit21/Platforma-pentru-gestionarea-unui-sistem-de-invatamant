@@ -22,7 +22,7 @@ export type StudentStats = {
     average: number;
     todayCourses: number;
     unreadNotifications: number;
-    debtsLei: number;
+    absences: number;
 };
 
 export type StudentCourse = {

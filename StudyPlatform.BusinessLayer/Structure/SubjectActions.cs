@@ -12,7 +12,7 @@ public class SubjectActions
         using var context = new PlatformDbContext();
         try
         {
-            var subject = new SubjectEntity { Name = dto.Name.Trim() };
+            var subject = new SubjectEntity { Name = dto.Name.Trim(), ProfessorId = dto.ProfessorId };
             context.Subjects.Add(subject);
             return context.SaveChanges() > 0;
         }
@@ -27,6 +27,7 @@ public class SubjectActions
             var subject = context.Subjects.FirstOrDefault(x => x.Id == id);
             if (subject is null) return false;
             subject.Name = dto.Name.Trim();
+            subject.ProfessorId = dto.ProfessorId;
             return context.SaveChanges() > 0;
         }
         catch (Exception ex) { Console.WriteLine($"Eroare la update materie: {ex.Message}"); return false; }
@@ -50,9 +51,24 @@ public class SubjectActions
         using var context = new PlatformDbContext();
         try
         {
-            var subject = context.Subjects.AsNoTracking().FirstOrDefault(x => x.Id == id);
-            if (subject is null) return null;
-            return new SubjectInfoDto { Id = subject.Id, Name = subject.Name };
+            var result = context.Subjects.AsNoTracking()
+                .Where(x => x.Id == id)
+                .GroupJoin(
+                    context.Users.AsNoTracking(),
+                    s => s.ProfessorId,
+                    u => (Guid?)u.Id,
+                    (s, users) => new { s, users })
+                .SelectMany(
+                    x => x.users.DefaultIfEmpty(),
+                    (x, u) => new SubjectInfoDto
+                    {
+                        Id = x.s.Id,
+                        Name = x.s.Name,
+                        ProfessorId = x.s.ProfessorId,
+                        ProfessorName = u != null ? u.FirstName + " " + u.LastName : null,
+                    })
+                .FirstOrDefault();
+            return result;
         }
         catch { return null; }
     }
@@ -63,7 +79,20 @@ public class SubjectActions
         try
         {
             return context.Subjects.AsNoTracking()
-                .Select(x => new SubjectInfoDto { Id = x.Id, Name = x.Name })
+                .GroupJoin(
+                    context.Users.AsNoTracking(),
+                    s => s.ProfessorId,
+                    u => (Guid?)u.Id,
+                    (s, users) => new { s, users })
+                .SelectMany(
+                    x => x.users.DefaultIfEmpty(),
+                    (x, u) => new SubjectInfoDto
+                    {
+                        Id = x.s.Id,
+                        Name = x.s.Name,
+                        ProfessorId = x.s.ProfessorId,
+                        ProfessorName = u != null ? u.FirstName + " " + u.LastName : null,
+                    })
                 .ToList();
         }
         catch { return new List<SubjectInfoDto>(); }
