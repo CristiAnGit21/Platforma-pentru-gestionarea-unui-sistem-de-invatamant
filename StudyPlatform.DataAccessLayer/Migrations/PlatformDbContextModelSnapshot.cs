@@ -49,6 +49,39 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                     b.ToTable("Attendances");
                 });
 
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.ContractEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("FileData")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UploadedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("Contracts");
+                });
+
             modelBuilder.Entity("StudyPlatform.Domain.Entities.EventEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -241,7 +274,12 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("ProfessorId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProfessorId");
 
                     b.ToTable("Subjects");
                 });
@@ -308,6 +346,15 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.ContractEntity", b =>
+                {
+                    b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("StudyPlatform.Domain.Entities.EventEntity", b =>
                 {
                     b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
@@ -336,6 +383,14 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                     b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("StudyPlatform.Domain.Entities.SubjectEntity", b =>
+                {
+                    b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 

@@ -85,6 +85,19 @@ public class ReportActions
         catch { return new List<ReportInfoDto>(); }
     }
 
+    public List<ReportInfoDto> GetReportsByUser(Guid userId)
+    {
+        using var context = new PlatformDbContext();
+        try
+        {
+            return context.Reports.AsNoTracking()
+                .Where(r => r.UserId == userId)
+                .Select(r => MapToDto(r))
+                .ToList();
+        }
+        catch { return new List<ReportInfoDto>(); }
+    }
+
     private static ReportInfoDto MapToDto(ReportEntity r) => new ReportInfoDto
     {
         Id = r.Id,

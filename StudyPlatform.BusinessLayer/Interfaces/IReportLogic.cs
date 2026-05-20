@@ -10,4 +10,5 @@ public interface IReportLogic
     ServiceResponse DeleteReport(Guid id);
     ServiceResponse GetReportById(Guid id);
     ServiceResponse GetReportList();
+    ServiceResponse GetReportsByUser(Guid userId);
 }

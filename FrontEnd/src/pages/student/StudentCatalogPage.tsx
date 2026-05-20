@@ -96,7 +96,7 @@ const StudentCatalogPage = () => {
                     gradesRes.data?.data ?? gradesRes.data ?? [];
                 const attendanceRaw: { id: string; date: string; present: boolean; subjectId: string }[] =
                     attendanceRes.data?.data ?? attendanceRes.data ?? [];
-                const subjects: { id: string; name: string }[] =
+                const subjects: { id: string; name: string; professorName?: string }[] =
                     subjectsRes.data?.data ?? subjectsRes.data ?? [];
                 const userInfo: { groupId?: string } = userRes.data?.data ?? userRes.data ?? {};
 
@@ -110,7 +110,7 @@ const StudentCatalogPage = () => {
                     } catch { /* no group */ }
                 }
 
-                const subjectMap = Object.fromEntries(subjects.map(s => [s.id, s.name]));
+                const subjectMap = Object.fromEntries(subjects.map(s => [s.id, { name: s.name, professorName: s.professorName }]));
 
                 const gradesBySubject = grades.reduce<Record<string, { values: number[]; subjectId: string }>>((acc, g) => {
                     const key = g.subjectId;
@@ -138,10 +138,11 @@ const StudentCatalogPage = () => {
                             : i % 2 === 0 ? "Absent" as AttendanceStatus
                             : "Nemotivat" as AttendanceStatus,
                     }));
+                    const subInfo = subjectMap[subId];
                     return {
                         id: `${subId}-${idx}`,
-                        name: subjectMap[subId] ?? 'Disciplina',
-                        professor: 'Profesor titular',
+                        name: subInfo?.name ?? 'Disciplina',
+                        professor: subInfo?.professorName ?? 'Nespecificat',
                         grades: gradesBySubject[subId]?.values ?? [],
                         attendance: attRecords,
                     };

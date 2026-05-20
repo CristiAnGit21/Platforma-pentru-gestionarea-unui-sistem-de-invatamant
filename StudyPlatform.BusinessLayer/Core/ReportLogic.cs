@@ -59,4 +59,14 @@ public class ReportLogic : ReportActions, IReportLogic
         }
         catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
     }
+
+    public ServiceResponse GetReportsByUser(Guid userId)
+    {
+        try
+        {
+            var list = base.GetReportsByUser(userId);
+            return new ServiceResponse { IsSuccess = true, Data = list };
+        }
+        catch (Exception ex) { return new ServiceResponse { IsSuccess = false, Message = ex.Message }; }
+    }
 }

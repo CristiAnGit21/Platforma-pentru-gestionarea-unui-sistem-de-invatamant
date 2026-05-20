@@ -6,7 +6,7 @@ import { setAuthSession } from "../auth/storage";
 import { decodeToken } from "../auth/jwt";
 import type { AuthSession } from "../auth/types";
 
-const API_BASE_URL = "http://localhost:5298/api";
+const API_BASE_URL = "/api";
 
 const LogIn = () => {
     const [email, setEmail] = useState("");
@@ -99,9 +99,6 @@ const LogIn = () => {
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="text-gray-700 font-semibold text-sm">Parolă</label>
-                                    <span className="text-purple-600 text-xs font-semibold cursor-pointer hover:underline">
-                                        Ai uitat parola?
-                                    </span>
                                 </div>
                                 <input
                                     type="password"

@@ -112,9 +112,10 @@ const AdminDashboard = () => {
     const [notifForm, setNotifForm] = useState({ title: '', message: '', type: 'general' });
     const [sendingNotif, setSendingNotif] = useState(false);
 
-    const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
+    const [subjects, setSubjects] = useState<{ id: string; name: string; professorId?: string; professorName?: string }[]>([]);
     const [newSubjectName, setNewSubjectName] = useState('');
     const [addingSubject, setAddingSubject] = useState(false);
+    const [assigningSubjectId, setAssigningSubjectId] = useState<string | null>(null);
 
     const showTemporaryMessage = (text: string) => {
         setMessage(text);
@@ -124,7 +125,7 @@ const AdminDashboard = () => {
     const fetchSubjects = useCallback(async () => {
         try {
             const res = await api.get('/subject');
-            const list: { id: string; name: string }[] = res.data?.data ?? res.data ?? [];
+            const list: { id: string; name: string; professorId?: string; professorName?: string }[] = res.data?.data ?? res.data ?? [];
             setSubjects(Array.isArray(list) ? list : []);
         } catch {
             setSubjects([]);
@@ -157,6 +158,26 @@ const AdminDashboard = () => {
         } catch (error) {
             const msg = error instanceof AxiosError ? error.response?.data?.message ?? error.message : 'Eroare la ștergerea materiei.';
             showTemporaryMessage(msg);
+        }
+    };
+
+    const handleAssignProfessor = async (subjectId: string, professorId: string) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (!subject) return;
+        setAssigningSubjectId(subjectId);
+        try {
+            await api.put(`/subject/${subjectId}`, {
+                id: subjectId,
+                name: subject.name,
+                professorId: professorId || null,
+            });
+            await fetchSubjects();
+            showTemporaryMessage(professorId ? 'Profesorul a fost atribuit materiei.' : 'Profesorul a fost eliminat de la materie.');
+        } catch (error) {
+            const msg = error instanceof AxiosError ? error.response?.data?.message ?? error.message : 'Eroare la atribuirea profesorului.';
+            showTemporaryMessage(msg);
+        } finally {
+            setAssigningSubjectId(null);
         }
     };
 
@@ -513,7 +534,7 @@ const AdminDashboard = () => {
                     <div className="flex items-center justify-between gap-4 mb-4">
                         <div>
                             <h2 className="text-xl font-bold text-gray-800">Materii</h2>
-                            <p className="text-gray-500 text-sm mt-1">Materiile sunt folosite de profesori pentru a adăuga note în catalog.</p>
+                            <p className="text-gray-500 text-sm mt-1">Atribuiți fiecare materie unui profesor. Profesorul va putea adăuga note și prezență doar la materiile sale.</p>
                         </div>
                     </div>
 
@@ -541,20 +562,48 @@ const AdminDashboard = () => {
                             Nu există materii. Adaugă prima materie mai sus.
                         </p>
                     ) : (
-                        <div className="flex flex-wrap gap-2">
-                            {subjects.map(s => (
-                                <span key={s.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 text-sm font-medium">
-                                    {s.name}
-                                    <button
-                                        type="button"
-                                        onClick={() => void handleDeleteSubject(s.id, s.name)}
-                                        className="text-violet-300 hover:text-red-500 transition-colors"
-                                        title="Șterge materia"
-                                    >
-                                        <Trash2 size={13} />
-                                    </button>
-                                </span>
-                            ))}
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-gray-100">
+                                        <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider pb-3 px-2">Materie</th>
+                                        <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider pb-3 px-2">Profesor atribuit</th>
+                                        <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-3 px-2">Acțiuni</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {subjects.map(s => (
+                                        <tr key={s.id} className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50/50 transition-colors">
+                                            <td className="py-3 px-2">
+                                                <span className="text-sm font-semibold text-gray-800">{s.name}</span>
+                                            </td>
+                                            <td className="py-3 px-2">
+                                                <select
+                                                    value={s.professorId ?? ''}
+                                                    onChange={e => void handleAssignProfessor(s.id, e.target.value)}
+                                                    disabled={assigningSubjectId === s.id}
+                                                    className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none transition-all disabled:opacity-60 disabled:cursor-wait min-w-[200px]"
+                                                >
+                                                    <option value="">— Neatribuit —</option>
+                                                    {activeProfessors.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                            <td className="py-3 px-2 text-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void handleDeleteSubject(s.id, s.name)}
+                                                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                    title="Șterge materia"
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>

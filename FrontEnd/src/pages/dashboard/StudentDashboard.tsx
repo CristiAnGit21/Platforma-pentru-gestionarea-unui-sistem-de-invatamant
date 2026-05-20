@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthSession } from "../../auth/storage";
 import { useApi } from "../../providers/AxiosProvider";
+import type { NotificationTag } from "../../components/student-dashboard/types";
 import AcademicSummaryCard from "../../components/student-dashboard/AcademicSummaryCard";
 import DeadlinesCard from "../../components/student-dashboard/DeadlinesCard";
 import NotificationsPreviewCard from "../../components/student-dashboard/NotificationsPreviewCard";
@@ -23,7 +24,7 @@ const EMPTY_DATA: StudentDashboardData = {
         creditsTotal: 60,
         absenceRisk: "—",
     },
-    stats: { average: 0, todayCourses: 0, unreadNotifications: 0, debtsLei: 0 },
+    stats: { average: 0, todayCourses: 0, unreadNotifications: 0, absences: 0 },
     today: [],
     recentGrades: [],
     deadlines: [],
@@ -43,12 +44,13 @@ const StudentDashboard = () => {
         if (!userId) return;
         void (async () => {
             try {
-                const [gradesRes, attendanceRes, subjectsRes, userRes, eventsRes] = await Promise.all([
+                const [gradesRes, attendanceRes, subjectsRes, userRes, eventsRes, notifRes] = await Promise.all([
                     api.get(`/grade/student/${userId}`),
                     api.get(`/attendance/student/${userId}`),
                     api.get('/subject'),
                     api.get(`/user/${userId}`),
                     api.get('/event'),
+                    api.get('/notification'),
                 ]);
 
                 const grades: { id: string; value: number; date: string; subjectId: string }[] =
@@ -61,6 +63,47 @@ const StudentDashboard = () => {
                     userRes.data?.data ?? userRes.data ?? {};
                 const events: { id: string; title: string; date: string; startTime: string; location: string; type: string }[] =
                     eventsRes.data?.data ?? eventsRes.data ?? [];
+                const rawNotifs: { id: string; title: string; message: string; type: string; createdAt: string }[] =
+                    notifRes.data?.data ?? notifRes.data ?? [];
+
+                const readIds: Set<string> = (() => {
+                    try {
+                        const raw = localStorage.getItem('notif_read_ids');
+                        return new Set<string>(raw ? (JSON.parse(raw) as string[]) : []);
+                    } catch { return new Set<string>(); }
+                })();
+
+                const typeToTag = (t: string): NotificationTag => {
+                    const map: Record<string, NotificationTag> = {
+                        nota: 'Note', alerta: 'Alerte', orar: 'Orar',
+                        financiar: 'Financiar', absenta: 'Absente',
+                    };
+                    return map[t] ?? 'Note';
+                };
+
+                const notifTimeAgo = (iso: string) => {
+                    const diff = Date.now() - new Date(iso).getTime();
+                    const mins = Math.floor(diff / 60000);
+                    if (mins < 1) return 'Acum';
+                    if (mins < 60) return `Acum ${mins} min`;
+                    const hours = Math.floor(mins / 60);
+                    if (hours < 24) return `Acum ${hours}h`;
+                    return `Acum ${Math.floor(hours / 24)} zile`;
+                };
+
+                const unreadCount = rawNotifs.filter(n => !readIds.has(n.id)).length;
+
+                const previewNotifs = rawNotifs
+                    .slice()
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .slice(0, 3)
+                    .map(n => ({
+                        title: n.title,
+                        description: n.message,
+                        tag: typeToTag(n.type),
+                        time: notifTimeAgo(n.createdAt),
+                        unread: !readIds.has(n.id),
+                    }));
 
                 const subjectMap = Object.fromEntries(subjects.map(s => [s.id, s.name]));
 
@@ -116,11 +159,11 @@ const StudentDashboard = () => {
                         creditsTotal: 60,
                         absenceRisk: attendancePercent >= 75 ? 'Scazut' : 'Ridicat',
                     },
-                    stats: { average, todayCourses: todayEvents.length, unreadNotifications: 0, debtsLei: 0 },
+                    stats: { average, todayCourses: todayEvents.length, unreadNotifications: unreadCount, absences: attendance.filter(a => !a.present).length },
                     today: todayEvents,
                     recentGrades,
                     deadlines: [],
-                    notifications: [],
+                    notifications: previewNotifs,
                 });
             } catch (err) {
                 console.error(err);

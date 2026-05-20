@@ -25,6 +25,7 @@ const navItemsByRole: Record<"ADMIN" | "PROFESOR" | "STUDENT", NavItem[]> = {
     { page: "Studenți", path: "/admin/studenti", icon: <IdCard size={27} /> },
     { page: "Profesori", path: "/admin/profesori", icon: <User size={27} /> },
     { page: "Notificări", path: "/admin/notificari", icon: <Bell size={27} /> },
+    { page: "Rapoarte", path: "/admin/rapoarte", icon: <MessageCircleWarning size={27} /> },
   ],
   PROFESOR: [
     { page: "Dashboard", path: "/profesor/dashboard", icon: <Home size={27} /> },

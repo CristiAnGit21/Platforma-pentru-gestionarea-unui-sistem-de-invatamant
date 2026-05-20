@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudyPlatform.BusinessLayer.Interfaces;
@@ -18,8 +19,15 @@ public class ReportController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "ADMIN,PROFESOR")]
-    public IActionResult GetAll() => Ok(_reportLogic.GetReportList());
+    [Authorize]
+    public IActionResult GetAll()
+    {
+        if (User.IsInRole("ADMIN") || User.IsInRole("PROFESOR"))
+            return Ok(_reportLogic.GetReportList());
+
+        var callerId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+        return Ok(_reportLogic.GetReportsByUser(callerId));
+    }
 
     [HttpGet("{id}")]
     [Authorize]
@@ -33,6 +41,9 @@ public class ReportController : ControllerBase
     [Authorize]
     public IActionResult Create([FromBody] ReportCreateDto dto)
     {
+        var callerId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+        dto.UserId = callerId == Guid.Empty ? null : callerId;
+
         var result = _reportLogic.CreateReport(dto);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
