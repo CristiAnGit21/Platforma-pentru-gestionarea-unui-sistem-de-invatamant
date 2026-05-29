@@ -28,6 +28,14 @@ public class PlatformDbContext : DbContext
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
+        // Group -> Professor (User) optional many-to-one
+        modelBuilder.Entity<GroupEntity>()
+            .HasOne<UserEntity>()
+            .WithMany()
+            .HasForeignKey(g => g.ProfessorId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
         // Grade → Student (User) many-to-one
         modelBuilder.Entity<GradeEntity>()
             .HasOne<UserEntity>()

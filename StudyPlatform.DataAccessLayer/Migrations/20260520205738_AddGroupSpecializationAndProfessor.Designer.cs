@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StudyPlatform.DataAccessLayer.Context;
@@ -11,9 +12,11 @@ using StudyPlatform.DataAccessLayer.Context;
 namespace StudyPlatform.DataAccessLayer.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    partial class PlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260520205738_AddGroupSpecializationAndProfessor")]
+    partial class AddGroupSpecializationAndProfessor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,39 +50,6 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Attendances");
-                });
-
-            modelBuilder.Entity("StudyPlatform.Domain.Entities.ContractEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("FileData")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UploadedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("Contracts");
                 });
 
             modelBuilder.Entity("StudyPlatform.Domain.Entities.EventEntity", b =>
@@ -283,12 +253,7 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ProfessorId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ProfessorId");
 
                     b.ToTable("Subjects");
                 });
@@ -355,15 +320,6 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("StudyPlatform.Domain.Entities.ContractEntity", b =>
-                {
-                    b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("StudyPlatform.Domain.Entities.EventEntity", b =>
                 {
                     b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
@@ -400,14 +356,6 @@ namespace StudyPlatform.DataAccessLayer.Migrations
                     b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-                });
-
-            modelBuilder.Entity("StudyPlatform.Domain.Entities.SubjectEntity", b =>
-                {
-                    b.HasOne("StudyPlatform.Domain.Entities.UserEntity", null)
-                        .WithMany()
-                        .HasForeignKey("ProfessorId")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 

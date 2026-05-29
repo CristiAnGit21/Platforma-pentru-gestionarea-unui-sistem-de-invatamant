@@ -25,12 +25,15 @@ type BackendUser = {
     email: string;
     role: number | string;
     status: number | string;
+    groupId?: string | null;
 };
 
 type BackendGroup = {
     id: string;
     name: string;
     year: number;
+    specialization?: string | null;
+    professorId?: string | null;
 };
 
 type ApiEnvelope<T> = {
@@ -106,7 +109,9 @@ const AdminDashboard = () => {
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [editingGroup, setEditingGroup] = useState<Group | null>(null);
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
-    const [groupStudentMap, setGroupStudentMap] = useState<Record<string, string[]>>({});
+    const [isGroupDeleteMode, setIsGroupDeleteMode] = useState(false);
+    const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+    const [isDeletingGroups, setIsDeletingGroups] = useState(false);
 
     const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
     const [notifForm, setNotifForm] = useState({ title: '', message: '', type: 'general' });
@@ -127,8 +132,12 @@ const AdminDashboard = () => {
             const res = await api.get('/subject');
             const list: { id: string; name: string; professorId?: string; professorName?: string }[] = res.data?.data ?? res.data ?? [];
             setSubjects(Array.isArray(list) ? list : []);
-        } catch {
+        } catch (error) {
             setSubjects([]);
+            const msg = error instanceof AxiosError
+                ? error.response?.data?.message ?? error.message
+                : 'Nu s-au putut incarca materiile.';
+            showTemporaryMessage(msg);
         }
     }, [api]);
 
@@ -197,6 +206,7 @@ const AdminDashboard = () => {
             const nextPendingUsers: PendingUser[] = [];
             const nextActiveProfessors: Professor[] = [];
             const nextActiveStudents: PendingUser[] = [];
+            const nextGroupStudentMap: Record<string, string[]> = {};
 
             for (const user of safeUsers) {
                 const normalizedRole = normalizeBackendRole(user.role);
@@ -213,6 +223,12 @@ const AdminDashboard = () => {
                     nextPendingUsers.push(mappedUser);
                 } else if (normalizedRole === "Student" && normalizedStatus === "Active") {
                     nextActiveStudents.push(mappedUser);
+                    if (user.groupId) {
+                        if (!nextGroupStudentMap[user.groupId]) {
+                            nextGroupStudentMap[user.groupId] = [];
+                        }
+                        nextGroupStudentMap[user.groupId].push(user.id);
+                    }
                 } else if (normalizedRole === "Profesor" && normalizedStatus === "Active") {
                     nextActiveProfessors.push({ ...mappedUser, status: "ACTIVE" });
                 }
@@ -227,9 +243,9 @@ const AdminDashboard = () => {
                     id: group.id,
                     name: group.name,
                     year: group.year,
-                    specialization: "",
-                    professorId: undefined,
-                    studentIds: groupStudentMap[group.id] ?? [],
+                    specialization: group.specialization ?? "",
+                    professorId: group.professorId ?? undefined,
+                    studentIds: nextGroupStudentMap[group.id] ?? [],
                 }))
             );
         } catch (error) {
@@ -241,11 +257,15 @@ const AdminDashboard = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [api, groupStudentMap]);
+    }, [api]);
 
     useEffect(() => {
         void fetchDashboardData();
     }, [fetchDashboardData]);
+
+    useEffect(() => {
+        setSelectedGroupIds((prev) => prev.filter((id) => groups.some((group) => group.id === id)));
+    }, [groups]);
 
     const handleSetRole = async (user: PendingUser) => {
         try {
@@ -277,6 +297,8 @@ const AdminDashboard = () => {
             await api.post("/Group", {
                 name: groupForm.name.trim(),
                 year: groupForm.year,
+                specialization: groupForm.specialization.trim(),
+                professorId: groupForm.professorId || null,
             });
 
             await fetchDashboardData();
@@ -289,6 +311,65 @@ const AdminDashboard = () => {
                     ? error.response?.data?.message ?? error.message
                     : "Nu s-a putut crea grupa.";
             showTemporaryMessage(messageText);
+        }
+    };
+
+    const toggleGroupSelection = (groupId: string) => {
+        setSelectedGroupIds((prev) =>
+            prev.includes(groupId)
+                ? prev.filter((id) => id !== groupId)
+                : [...prev, groupId]
+        );
+    };
+
+    const handleToggleGroupDeleteMode = () => {
+        setIsGroupDeleteMode((prev) => {
+            if (prev) {
+                setSelectedGroupIds([]);
+            }
+            return !prev;
+        });
+    };
+
+    const handleDeleteSelectedGroups = async () => {
+        if (selectedGroupIds.length === 0) return;
+
+        const confirmed = window.confirm(
+            `Sigur vrei sa stergi ${selectedGroupIds.length} grupe selectate?\nStudentii vor ramane in platforma, dar fara grupa.`
+        );
+        if (!confirmed) return;
+
+        setIsDeletingGroups(true);
+        try {
+            const deleteResults = await Promise.allSettled(
+                selectedGroupIds.map((groupId) => api.delete(`/Group/${groupId}`))
+            );
+            const succeededCount = deleteResults.filter((result) => result.status === "fulfilled").length;
+            const failedCount = deleteResults.length - succeededCount;
+
+            if (editingGroup && selectedGroupIds.includes(editingGroup.id)) {
+                setIsAssignModalOpen(false);
+                setEditingGroup(null);
+                setSelectedStudentIds([]);
+            }
+
+            await fetchDashboardData();
+            setSelectedGroupIds([]);
+            setIsGroupDeleteMode(false);
+
+            if (failedCount === 0) {
+                showTemporaryMessage(`${succeededCount} grupe au fost sterse.`);
+            } else {
+                showTemporaryMessage(`Sterse: ${succeededCount}. Esuate: ${failedCount}.`);
+            }
+        } catch (error) {
+            const messageText =
+                error instanceof AxiosError
+                    ? error.response?.data?.message ?? error.message
+                    : "Nu s-au putut sterge grupele selectate.";
+            showTemporaryMessage(messageText);
+        } finally {
+            setIsDeletingGroups(false);
         }
     };
 
@@ -466,14 +547,38 @@ const AdminDashboard = () => {
                 <div className="mt-8 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                     <div className="flex items-center justify-between gap-4 mb-6">
                         <h2 className="text-xl font-bold text-gray-800">Grupe</h2>
-                        <button
-                            type="button"
-                            onClick={() => setIsGroupModalOpen(true)}
-                            className="px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors flex items-center gap-2"
-                        >
-                            <span>+</span>
-                            Creează grupă
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={handleToggleGroupDeleteMode}
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${
+                                    isGroupDeleteMode
+                                        ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                        : "bg-red-50 text-red-700 hover:bg-red-100"
+                                }`}
+                            >
+                                <Trash2 size={14} />
+                                {isGroupDeleteMode ? "Renunta" : "Sterge grupe"}
+                            </button>
+                            {isGroupDeleteMode && (
+                                <button
+                                    type="button"
+                                    onClick={() => void handleDeleteSelectedGroups()}
+                                    disabled={selectedGroupIds.length === 0 || isDeletingGroups}
+                                    className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isDeletingGroups ? "Se sterge..." : `Confirma stergerea (${selectedGroupIds.length})`}
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => setIsGroupModalOpen(true)}
+                                className="px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors flex items-center gap-2"
+                            >
+                                <span>+</span>
+                                Creează grupă
+                            </button>
+                        </div>
                     </div>
 
                     {groups.length === 0 ? (
@@ -485,6 +590,7 @@ const AdminDashboard = () => {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="border-b border-gray-100">
+                                        {isGroupDeleteMode && <th className="pb-3 font-semibold text-gray-700 w-12">Select</th>}
                                         <th className="pb-3 font-semibold text-gray-700">Nume grupă</th>
                                         <th className="pb-3 font-semibold text-gray-700">An</th>
                                         <th className="pb-3 font-semibold text-gray-700">Specialitate</th>
@@ -495,8 +601,23 @@ const AdminDashboard = () => {
                                 <tbody>
                                     {groups.map((g) => {
                                         const prof = activeProfessors.find(p => p.id === g.professorId);
+                                        const isSelected = selectedGroupIds.includes(g.id);
                                         return (
-                                            <tr key={g.id} className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors">
+                                            <tr
+                                                key={g.id}
+                                                className={`border-b border-gray-50 last:border-b-0 transition-colors ${isGroupDeleteMode ? "cursor-pointer hover:bg-red-50" : "hover:bg-gray-50"}`}
+                                                onClick={isGroupDeleteMode ? () => toggleGroupSelection(g.id) : undefined}
+                                            >
+                                                {isGroupDeleteMode && (
+                                                    <td className="py-4" onClick={(e) => e.stopPropagation()}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => toggleGroupSelection(g.id)}
+                                                            className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                                        />
+                                                    </td>
+                                                )}
                                                 <td className="py-4 font-medium text-gray-800">{g.name}</td>
                                                 <td className="py-4 text-gray-600">Anul {g.year}</td>
                                                 <td className="py-4 text-gray-600">{g.specialization}</td>
@@ -514,7 +635,8 @@ const AdminDashboard = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenAssignModal(g)}
-                                                        className="text-sm font-semibold text-violet-600 hover:text-violet-800 flex items-center gap-1 ml-auto"
+                                                        disabled={isGroupDeleteMode}
+                                                        className="text-sm font-semibold text-violet-600 hover:text-violet-800 flex items-center gap-1 ml-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-violet-600"
                                                     >
                                                         <span>Adaugă studenți</span>
                                                         <span className="text-gray-400 font-normal">({g.studentIds?.length || 0})</span>

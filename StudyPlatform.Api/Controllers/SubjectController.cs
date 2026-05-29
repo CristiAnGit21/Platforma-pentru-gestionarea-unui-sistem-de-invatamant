@@ -19,7 +19,11 @@ public class SubjectController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public IActionResult GetAll() => Ok(_subjectLogic.GetSubjectList());
+    public IActionResult GetAll()
+    {
+        var result = _subjectLogic.GetSubjectList();
+        return result.IsSuccess ? Ok(result) : StatusCode(StatusCodes.Status500InternalServerError, result);
+    }
 
     [HttpGet("{id}")]
     [Authorize]
