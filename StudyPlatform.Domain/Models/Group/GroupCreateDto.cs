@@ -9,4 +9,8 @@ public class GroupCreateDto
 
     [Range(1, 6, ErrorMessage = "Anul trebuie să fie între 1 și 6.")]
     public int Year { get; set; }
+
+    public string? Specialization { get; set; }
+
+    public Guid? ProfessorId { get; set; }
 }
