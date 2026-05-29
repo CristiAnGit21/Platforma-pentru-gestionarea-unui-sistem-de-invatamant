@@ -57,7 +57,7 @@ public class GradeController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN,PROFESOR")]
     public IActionResult Delete(Guid id)
     {
         var result = _gradeLogic.DeleteGrade(id);
